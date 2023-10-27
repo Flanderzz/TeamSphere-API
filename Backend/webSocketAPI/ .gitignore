@@ -1,6 +1,9 @@
-application-local.properties
-
-# Miscellaneous
+/application-local.properties
+/createdFiles.lst
+/pom.properties
+/inputFiles.lst
+*.dump
+# Miscellaneousackend/webSocketAPI/t
 *.java.hsp
 *.sonarj
 *.sw*
@@ -44,7 +47,7 @@ spring-*/src/main/java/META-INF/MANIFEST.MF
 *.iml
 *.ipr
 *.iws
-.idea
+*.idea
 out
 test-output
 atlassian-ide-plugin.xml
