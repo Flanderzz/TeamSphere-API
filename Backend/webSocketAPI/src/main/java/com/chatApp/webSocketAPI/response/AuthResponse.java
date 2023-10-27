@@ -1,5 +1,8 @@
 package com.chatApp.webSocketAPI.response;
 
+import lombok.Data;
+
+@Data
 public class AuthResponse {
     private String jwt;
     private boolean isAuthenticated;
