@@ -1,4 +1,9 @@
-/application-local.properties
+Backend/webSocketAPI/src/main/resources/application-local.properties
+Backend/webSocketAPI/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst
+Backend/webSocketAPI/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst
+Backend/webSocketAPI/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/createdFiles.lst
+Backend/webSocketAPI/target/surefire-reports/2023-10-26T22-23-20_362-jvmRun1.dump
+Backend/webSocketAPI/.idea/misc.xml
 /createdFiles.lst
 /pom.properties
 /inputFiles.lst
