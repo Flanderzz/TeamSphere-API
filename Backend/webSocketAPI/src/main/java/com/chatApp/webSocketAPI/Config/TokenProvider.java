@@ -2,7 +2,7 @@ package com.chatApp.webSocketAPI.Config;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
@@ -21,17 +21,16 @@ public class TokenProvider {
     public String generateToken(Authentication authentication){
         String jwt = Jwts.builder().setIssuer("YipYap").setIssuedAt(new Date()).setExpiration(new Date(new Date().getTime() + 600000))
                 .claim("Email", authentication.getName())
-                .signWith(key)
+                .signWith(key,SignatureAlgorithm.HS256)
                 .compact();
 
         return jwt;
     }
 
-    public String getEmailFromToken(String Token){
-        Token = Token.substring(7);
+    public String getEmailFromToken(String token){
+        String Token = token.substring(7);
         Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(Token).getBody();
-        String email = valueOf(claims.get("email"));
 
-        return email;
+        return valueOf(claims.get("Email"));
     }
 }
