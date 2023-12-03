@@ -48,6 +48,7 @@ spring-*/src/main/java/META-INF/MANIFEST.MF
 *.ipr
 *.iws
 *.idea
+Backend/webSocketAPI/.idea/vcs.xml
 out
 test-output
 atlassian-ide-plugin.xml
