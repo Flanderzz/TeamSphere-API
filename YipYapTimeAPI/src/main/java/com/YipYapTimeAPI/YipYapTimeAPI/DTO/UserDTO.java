@@ -9,8 +9,12 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @ToString
 public class UserDTO {
+
     private Integer id;
+
     private String username;
+
     private String email;
+
     private String profile_picture;
 }

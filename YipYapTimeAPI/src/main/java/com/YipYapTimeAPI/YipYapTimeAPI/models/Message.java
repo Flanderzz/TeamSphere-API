@@ -19,9 +19,11 @@ public class Message {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
+
     private String content;
 
     private LocalDateTime timeStamp;
+
     private Boolean is_read;
 
     @ManyToOne

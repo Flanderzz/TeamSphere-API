@@ -1,8 +1,7 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.request;
 
+//TODO: add lombok annotations
 public class UpdateUserRequest {
-
-
     private String username;
     private String profile_picture;
 

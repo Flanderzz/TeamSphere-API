@@ -1,9 +1,7 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.request;
 
+//TODO: add lombok annotations
 public class SingleChatRequest {
-
-
-
     private Integer userId;
 
     public SingleChatRequest() {

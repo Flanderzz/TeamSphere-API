@@ -1,5 +1,6 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.request;
 
+//TODO: add lombok annotations
 public class SendMessageRequest {
 
     private Integer chatId;

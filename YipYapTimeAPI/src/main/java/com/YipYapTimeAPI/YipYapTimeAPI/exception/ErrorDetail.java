@@ -12,7 +12,8 @@ import java.time.LocalDateTime;
 public class ErrorDetail {
 
     private String error;
-    private String detail;
-    private LocalDateTime timestamp;
 
+    private String detail;
+
+    private LocalDateTime timestamp;
 }

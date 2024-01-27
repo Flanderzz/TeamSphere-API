@@ -15,6 +15,7 @@ public class MessageDTOMapper {
         ChatDTO chatDto=ChatDTOMapper.toChatDto(message.getChat());
         UserDTO userDto=UserDTOMapper.toUserDTO(message.getUsername());
 
+        // TODO: add builder pattern instead of this
         MessageDTO messageDto=new MessageDTO();
         messageDto.setId(message.getId());
         messageDto.setChat(chatDto);

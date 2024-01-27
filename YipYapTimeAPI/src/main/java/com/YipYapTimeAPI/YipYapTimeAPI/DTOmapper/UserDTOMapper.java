@@ -10,6 +10,7 @@ public class UserDTOMapper {
 
     public static UserDTO toUserDTO(User user) {
 
+        // TODO: add builder pattern instead of this
         UserDTO userDto=new UserDTO();
         userDto.setEmail(user.getEmail());
         userDto.setUsername(user.getUsername());
@@ -17,7 +18,6 @@ public class UserDTOMapper {
         userDto.setProfile_picture(user.getProfile_image());
 
         return userDto;
-
     }
 
     public static HashSet<UserDTO> toUserDtos(Set<User> set){

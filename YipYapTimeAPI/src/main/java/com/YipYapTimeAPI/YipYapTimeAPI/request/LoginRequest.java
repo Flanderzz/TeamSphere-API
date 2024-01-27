@@ -1,8 +1,9 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.request;
 
+//TODO: add lombok annotations
 public class LoginRequest {
-
     private String email;
+
     private String password;
 
 

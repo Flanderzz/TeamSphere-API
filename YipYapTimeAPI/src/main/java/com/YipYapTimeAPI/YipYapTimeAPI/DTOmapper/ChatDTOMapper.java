@@ -14,10 +14,14 @@ public class ChatDTOMapper {
     public static ChatDTO toChatDto(Chat chat) {
 
         UserDTO userDto=UserDTOMapper.toUserDTO(chat.getCreated_by());
+
         List<MessageDTO> messageDtos=MessageDTOMapper.toMessageDtos(chat.getMessages());
+
         Set<UserDTO> userDtos=UserDTOMapper.toUserDtos(chat.getUsers());
+
         Set<UserDTO> admins=UserDTOMapper.toUserDtos(chat.getAdmins());
 
+        // TODO: add builder pattern instead of this
         ChatDTO chatDto=new ChatDTO();
         chatDto.setId(chat.getId());
         chatDto.setChat_image(chat.getChat_image());

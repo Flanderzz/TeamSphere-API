@@ -1,5 +1,6 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.request;
 
+//TODO: add lombok annotations
 public class RenameGroupChatRequest {
 
     private String groupName;

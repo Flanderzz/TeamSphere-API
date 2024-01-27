@@ -32,11 +32,9 @@ public class ChatServiceImpl implements ChatService {
         User reqUser=userService.findUserById(reqUserId);
         User user2 = userService.findUserById(userId2);
 
-//		System.out.println("before isChatExist");
 
         Chat isChatExist = chatRepo.findSingleChatByUsersId(user2, reqUser);
 
-//		System.out.println("isChatExist ----------------------------- "+isChatExist);
 
         if(isChatExist!=null) {
             return isChatExist;
@@ -49,7 +47,6 @@ public class ChatServiceImpl implements ChatService {
         chat.getUsers().add(user2);
         chat.setIs_group(false);
 
-//		System.out.println("chat ----------------------------- "+chat);
         Chat createdChat = chatRepo.save(chat);
 
 //
@@ -73,14 +70,9 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public List<Chat> findAllChatByUserId(Integer userId) throws UserException {
-
-        System.out.println("find chat ----------------------------- ");
-
         User user=userService.findUserById(userId);
 
         List<Chat> chats=chatRepo.findChatByUserId(user.getId());
-
-        System.out.println("find chat ----------------------------- "+chats);
 
         return chats;
     }

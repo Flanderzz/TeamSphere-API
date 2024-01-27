@@ -2,10 +2,14 @@ package com.YipYapTimeAPI.YipYapTimeAPI.request;
 
 import java.util.List;
 
+
+//TODO: add lombok annotations
 public class GroupChatRequest {
 
     private List<Integer> userIds;
+
     private String chat_name;
+
     private String chat_image;
 
     public GroupChatRequest() {

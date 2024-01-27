@@ -29,6 +29,7 @@ public class Chat {
     private User created_by;
 
     @ManyToMany
+    // this might not even be needed fr
     @JoinTable(
             name = "chat_users",
             joinColumns = @JoinColumn(name = "chat_id"),

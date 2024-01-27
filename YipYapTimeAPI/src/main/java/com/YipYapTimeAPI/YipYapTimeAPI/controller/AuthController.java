@@ -12,9 +12,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private UserRepository userRepository;
+
     private PasswordEncoder passwordEncoder;
+
     private JWTTokenProvider jwtTokenProvider;
+
     private CustomUserDetailsService customUserDetails;
+
 
     public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder, JWTTokenProvider jwtTokenProvider, CustomUserDetailsService customUserDetails) {
         this.userRepository=userRepository;
