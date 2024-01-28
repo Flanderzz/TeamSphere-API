@@ -39,10 +39,10 @@ public class MessageServiceImpl implements MessageService {
 
         System.out.println("send message ------- ");
 
-        User user=userService.findUserById(req.getUserId());
-        Chat chat=chatService.findChatById(req.getChatId());
+        User user = userService.findUserById(req.getUserId());
+        Chat chat = chatService.findChatById(req.getChatId());
 
-        Message message=new Message();
+        Message message = new Message();
         message.setChat(chat);
         message.setUsername(user);
         message.setContent(req.getContent());
@@ -56,7 +56,7 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public String deleteMessage(Integer messageId) throws MessageException {
 
-        Message message=findMessageById(messageId);
+        Message message = findMessageById(messageId);
 
         messageRepo.deleteById(message.getId());
 
@@ -66,9 +66,9 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public List<Message> getChatsMessages(Integer chatId) throws ChatException {
 
-        Chat chat=chatService.findChatById(chatId);
+        Chat chat = chatService.findChatById(chatId);
 
-        List<Message> messages=messageRepo.findMessageByChatId(chatId);
+        List<Message> messages = messageRepo.findMessageByChatId(chatId);
 
         return messages;
     }
@@ -76,7 +76,7 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public Message findMessageById(Integer messageId) throws MessageException {
 
-        Optional<Message> message =messageRepo.findById(messageId);
+        Optional<Message> message = messageRepo.findById(messageId);
 
         if(message.isPresent()) {
             return message.get();

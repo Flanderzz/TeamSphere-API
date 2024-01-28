@@ -11,7 +11,7 @@ public class UserDTOMapper {
     public static UserDTO toUserDTO(User user) {
 
         // TODO: add builder pattern instead of this
-        UserDTO userDto=new UserDTO();
+        UserDTO userDto = new UserDTO();
         userDto.setEmail(user.getEmail());
         userDto.setUsername(user.getUsername());
         userDto.setId(user.getId());
@@ -21,7 +21,7 @@ public class UserDTOMapper {
     }
 
     public static HashSet<UserDTO> toUserDtos(Set<User> set){
-        HashSet<UserDTO> userDtos=new HashSet<>();
+        HashSet<UserDTO> userDtos = new HashSet<>();
 
         for(User user:set) {
             UserDTO userDto=toUserDTO(user);

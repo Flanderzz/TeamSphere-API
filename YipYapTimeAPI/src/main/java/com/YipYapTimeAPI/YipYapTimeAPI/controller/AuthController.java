@@ -47,7 +47,7 @@ public class AuthController {
         String password = user.getPassword();
         String username = user.getUsername();
 
-        Optional<User> isEmailExist=userRepository.findByEmail(email);
+        Optional<User> isEmailExist = userRepository.findByEmail(email);
 
         // Check if user with the given email already exists
         if (isEmailExist.isPresent())
@@ -56,7 +56,7 @@ public class AuthController {
 
         // Creating a new user
         // TODO: builder pattern pls
-        User createdUser= new User();
+        User createdUser = new User();
         createdUser.setEmail(email);
         createdUser.setUsername(username);
         createdUser.setPassword(passwordEncoder.encode(password));
@@ -68,7 +68,7 @@ public class AuthController {
 
         String token = jwtTokenProvider.generateJwtToken(authentication);
 
-        AuthResponse authResponse= new AuthResponse(token, true);
+        AuthResponse authResponse = new AuthResponse(token, true);
 
         return new ResponseEntity<AuthResponse>(authResponse, HttpStatus.OK);
     }
@@ -82,7 +82,7 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         String token = jwtTokenProvider.generateJwtToken(authentication);
-        AuthResponse authResponse= new AuthResponse(token, true);
+        AuthResponse authResponse = new AuthResponse(token, true);
 
         return new ResponseEntity<AuthResponse>(authResponse,HttpStatus.OK);
     }

@@ -29,7 +29,7 @@ public class ChatServiceImpl implements ChatService {
 
 
 
-        User reqUser=userService.findUserById(reqUserId);
+        User reqUser = userService.findUserById(reqUserId);
         User user2 = userService.findUserById(userId2);
 
 
@@ -40,7 +40,7 @@ public class ChatServiceImpl implements ChatService {
             return isChatExist;
         }
 
-        Chat chat=new Chat();
+        Chat chat = new Chat();
 
         chat.setCreated_by(reqUser);
         chat.getUsers().add(reqUser);
@@ -60,7 +60,7 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public Chat findChatById(Integer chatId) throws ChatException {
 
-        Optional<Chat> chat =chatRepo.findById(chatId);
+        Optional<Chat> chat = chatRepo.findById(chatId);
 
         if(chat.isPresent()) {
             return chat.get();
@@ -70,9 +70,9 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public List<Chat> findAllChatByUserId(Integer userId) throws UserException {
-        User user=userService.findUserById(userId);
+        User user = userService.findUserById(userId);
 
-        List<Chat> chats=chatRepo.findChatByUserId(user.getId());
+        List<Chat> chats = chatRepo.findChatByUserId(user.getId());
 
         return chats;
     }
@@ -80,8 +80,8 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public Chat deleteChat(Integer chatId, Integer userId) throws ChatException, UserException {
 
-        User user=userService.findUserById(userId);
-        Chat chat=findChatById(chatId);
+        User user = userService.findUserById(userId);
+        Chat chat = findChatById(chatId);
 
         if((chat.getCreated_by().getId().equals(user.getId())) && !chat.getIs_group() ) {
             chatRepo.deleteById(chat.getId());
@@ -98,16 +98,16 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public Chat createGroup(GroupChatRequest req,Integer reqUserId) throws UserException {
 
-        User reqUser=userService.findUserById(reqUserId);
+        User reqUser = userService.findUserById(reqUserId);
 
-        Chat chat=new Chat();
+        Chat chat = new Chat();
 
         chat.setCreated_by(reqUser);
         chat.getUsers().add(reqUser);
 
         for(Integer userId:req.getUserIds()) {
-            User user =userService.findUserById(userId);
-            if(user!=null)chat.getUsers().add(user);
+            User user = userService.findUserById(userId);
+            if(user != null) chat.getUsers().add(user);
         }
 
         chat.setChat_name(req.getChat_name());
@@ -123,25 +123,22 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public Chat addUserToGroup(Integer userId, Integer chatId) throws UserException, ChatException {
 
-        Chat chat =findChatById(chatId);
-        User user=userService.findUserById(userId);
+        Chat chat = findChatById(chatId);
+        User user = userService.findUserById(userId);
 
         chat.getUsers().add(user);
 
 
-        Chat updatedChat=chatRepo.save(chat);
+        Chat updatedChat = chatRepo.save(chat);
 
         return updatedChat;
     }
 
-
-
-
     @Override
     public Chat renameGroup(Integer chatId, String groupName, Integer reqUserId) throws ChatException, UserException {
 
-        Chat chat=findChatById(chatId);
-        User user=userService.findUserById(reqUserId);
+        Chat chat = findChatById(chatId);
+        User user = userService.findUserById(reqUserId);
 
 
         if(chat.getUsers().contains(user))
@@ -152,10 +149,10 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public Chat removeFromGroup(Integer chatId, Integer userId, Integer reqUserId) throws UserException, ChatException {
-        Chat chat=findChatById(chatId);
-        User user=userService.findUserById(userId);
+        Chat chat = findChatById(chatId);
+        User user = userService.findUserById(userId);
 
-        User reqUser=userService.findUserById(reqUserId);
+        User reqUser = userService.findUserById(reqUserId);
 
         if(user.getId().equals(reqUser.getId()) ) {
             chat.getUsers().remove(reqUser);

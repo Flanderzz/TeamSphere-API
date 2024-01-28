@@ -22,25 +22,21 @@ import java.util.List;
 @RequestMapping("/api/message")
 public class MessageController {
 
-    private UserService userService;
-    private MessageService messageService;
-
     @Autowired
-    public MessageController(UserService userService, MessageService messageService) {
-        this.userService = userService;
-        this.messageService = messageService;
-    }
+    private UserService userService;
+    @Autowired
+    private MessageService messageService;
 
     @PostMapping("/create")
     public ResponseEntity<MessageDTO> sendMessageHandler(@RequestHeader("Authorization")String jwt, @RequestBody SendMessageRequest req) throws ChatException, UserException {
 
-        User reqUser=userService.findUserProfile(jwt);
+        User reqUser = userService.findUserProfile(jwt);
 
         req.setUserId(reqUser.getId());
 
         Message message = messageService.sendMessage(req);
 
-        MessageDTO messageDto= MessageDTOMapper.toMessageDto(message);
+        MessageDTO messageDto = MessageDTOMapper.toMessageDto(message);
 
         return new ResponseEntity<MessageDTO>(messageDto, HttpStatus.OK);
     }

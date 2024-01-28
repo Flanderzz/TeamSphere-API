@@ -12,11 +12,11 @@ public class MessageDTOMapper {
 
     public static MessageDTO toMessageDto(Message message) {
 
-        ChatDTO chatDto=ChatDTOMapper.toChatDto(message.getChat());
-        UserDTO userDto=UserDTOMapper.toUserDTO(message.getUsername());
+        ChatDTO chatDto = ChatDTOMapper.toChatDto(message.getChat());
+        UserDTO userDto = UserDTOMapper.toUserDTO(message.getUsername());
 
         // TODO: add builder pattern instead of this
-        MessageDTO messageDto=new MessageDTO();
+        MessageDTO messageDto = new MessageDTO();
         messageDto.setId(message.getId());
         messageDto.setChat(chatDto);
         messageDto.setContent(message.getContent());
@@ -35,9 +35,7 @@ public class MessageDTOMapper {
             MessageDTO messageDto = toMessageDto(message);
             messageDtos.add(messageDto);
         }
-
         return messageDtos;
     }
-
 
 }
