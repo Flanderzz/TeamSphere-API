@@ -32,7 +32,7 @@ public class MessageController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<MessageDTO> sendMessageHandler(@RequestHeader("Authorization")String jwt, @RequestBody SendMessageRequest req) throws UserException, ChatException, ChatException, UserException {
+    public ResponseEntity<MessageDTO> sendMessageHandler(@RequestHeader("Authorization")String jwt, @RequestBody SendMessageRequest req) throws ChatException, UserException {
 
         User reqUser=userService.findUserProfile(jwt);
 
