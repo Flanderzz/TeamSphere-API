@@ -17,6 +17,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
+
 
 @Configuration
 public class AppConfiguration {
@@ -24,20 +26,19 @@ public class AppConfiguration {
     @Bean
     public SecurityFilterChain securityAppConfig(HttpSecurity http) throws Exception {
 
-        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        http.sessionManagement().sessionCreationPolicy(STATELESS)
                 .and().authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll()
                 )
                 .addFilterBefore(new JWTTokenValidator(), BasicAuthenticationFilter.class)
                 .csrf().disable().cors().configurationSource(new CorsConfigurationSource() {
-
                     @Override
                     public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
 
                         CorsConfiguration cfg = new CorsConfiguration();
 
-                        cfg.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:4000"));
+                        cfg.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:3000/register"));
                         cfg.setAllowedMethods(Collections.singletonList("*"));
                         cfg.setAllowCredentials(true);
                         cfg.setAllowedHeaders(Collections.singletonList("*"));
