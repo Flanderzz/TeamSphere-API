@@ -12,11 +12,13 @@ import com.YipYapTimeAPI.YipYapTimeAPI.services.ChatService;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.MessageService;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+@Service
 public class MessageServiceImpl implements MessageService {
 
     @Autowired

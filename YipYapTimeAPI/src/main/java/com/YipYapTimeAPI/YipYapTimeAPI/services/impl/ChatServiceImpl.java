@@ -9,10 +9,12 @@ import com.YipYapTimeAPI.YipYapTimeAPI.request.GroupChatRequest;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.ChatService;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
+@Service
 public class ChatServiceImpl implements ChatService {
 
     private UserService userService;
