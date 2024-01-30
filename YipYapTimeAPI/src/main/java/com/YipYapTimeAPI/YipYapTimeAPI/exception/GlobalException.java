@@ -15,17 +15,17 @@ public class GlobalException {
     @ExceptionHandler(UserException.class)
     public ResponseEntity<ErrorDetail> UserExceptionHandler(UserException ue, WebRequest req){
 
-        ErrorDetail err =new ErrorDetail(ue.getMessage(),req.getDescription(false), LocalDateTime.now());
+        ErrorDetail error =new ErrorDetail(ue.getMessage(), req.getDescription(false), LocalDateTime.now());
 
-        return new ResponseEntity<ErrorDetail>(err, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<ErrorDetail>(error, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(MessageException.class)
     public ResponseEntity<ErrorDetail> MessageExceptionHandler(MessageException ue,WebRequest req){
 
-        ErrorDetail err =new ErrorDetail(ue.getMessage(),req.getDescription(false),LocalDateTime.now());
+        ErrorDetail error =new ErrorDetail(ue.getMessage(), req.getDescription(false), LocalDateTime.now());
 
-        return new ResponseEntity<ErrorDetail>(err,HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<ErrorDetail>(error, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -34,9 +34,9 @@ public class GlobalException {
         String error = me.getBindingResult().getFieldError().getDefaultMessage();
 
 
-        ErrorDetail err =new ErrorDetail("Validation Error",error ,LocalDateTime.now());
+        ErrorDetail err =new ErrorDetail("Validation Error", error ,LocalDateTime.now());
 
-        return new ResponseEntity<ErrorDetail>(err,HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<ErrorDetail>(err, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(NoHandlerFoundException.class)
@@ -48,9 +48,9 @@ public class GlobalException {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorDetail> otherErrorHandler(Exception e,WebRequest req){
 
-        ErrorDetail err =new ErrorDetail(e.getMessage(),req.getDescription(false),LocalDateTime.now());
+        ErrorDetail error = new ErrorDetail(e.getMessage(), req.getDescription(false), LocalDateTime.now());
 
-        return new ResponseEntity<ErrorDetail>(err,HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<ErrorDetail>(error, HttpStatus.BAD_REQUEST);
     }
 
 }

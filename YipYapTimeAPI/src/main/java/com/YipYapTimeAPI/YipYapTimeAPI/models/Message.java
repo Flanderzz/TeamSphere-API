@@ -1,11 +1,16 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.models;
 
-
-import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.SuperBuilder;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.ManyToOne;
+import lombok.Setter;
+import lombok.Getter;
+import lombok.ToString;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.hibernate.proxy.HibernateProxy;
-
 import java.time.LocalDateTime;
 import java.util.Objects;
 

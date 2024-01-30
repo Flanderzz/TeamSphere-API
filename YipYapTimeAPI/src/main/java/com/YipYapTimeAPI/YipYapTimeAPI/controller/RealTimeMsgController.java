@@ -9,8 +9,12 @@ import com.YipYapTimeAPI.YipYapTimeAPI.request.SendMessageRequest;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.ChatService;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.MessageService;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.handler.annotation.*;
+import org.springframework.messaging.handler.annotation.Header;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.util.Iterator;

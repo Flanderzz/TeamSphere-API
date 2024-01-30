@@ -1,7 +1,19 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.models;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.JoinColumn;
+import lombok.Setter;
+import lombok.Getter;
+import lombok.ToString;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.util.*;

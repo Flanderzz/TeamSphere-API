@@ -1,7 +1,11 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.DTO;
 
 import jakarta.persistence.Column;
-import lombok.*;
+import lombok.Setter;
+import lombok.Getter;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.HashSet;

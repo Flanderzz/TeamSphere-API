@@ -1,7 +1,10 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.DTO;
 
-import lombok.*;
-
+import lombok.Setter;
+import lombok.Getter;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 import java.time.LocalDateTime;
 
 @Setter
