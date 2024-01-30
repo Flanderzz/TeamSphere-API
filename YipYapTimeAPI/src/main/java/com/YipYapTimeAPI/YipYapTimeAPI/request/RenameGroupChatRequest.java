@@ -1,27 +1,17 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.request;
 
-//TODO: add lombok annotations
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
 public class RenameGroupChatRequest {
 
     private String groupName;
-
-    public RenameGroupChatRequest() {
-        // TODO Auto-generated constructor stub
-    }
-
-    public RenameGroupChatRequest(String groupName) {
-        super();
-        this.groupName = groupName;
-    }
-
-    public String getGroupName() {
-        return groupName;
-    }
-
-    public void setGroupName(String groupName) {
-        this.groupName = groupName;
-    }
-
 }
 
 

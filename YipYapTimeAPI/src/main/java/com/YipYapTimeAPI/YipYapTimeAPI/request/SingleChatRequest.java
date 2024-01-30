@@ -1,25 +1,14 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.request;
 
-//TODO: add lombok annotations
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
 public class SingleChatRequest {
     private Integer userId;
-
-    public SingleChatRequest() {
-        // TODO Auto-generated constructor stub
-    }
-
-    public SingleChatRequest(Integer userId) {
-        super();
-        this.userId = userId;
-    }
-
-    public Integer getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Integer userId) {
-        this.userId = userId;
-    }
-
-
 }
