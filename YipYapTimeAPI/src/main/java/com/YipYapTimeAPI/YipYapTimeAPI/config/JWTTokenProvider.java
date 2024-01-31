@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class JWTTokenProvider {
 
-    SecretKey key = Keys.hmacShaKeyFor(SecurityConst.JWT_KEY.getBytes());
+    SecretKey key = Keys.hmacShaKeyFor(JWTTokenConst.JWT_KEY.getBytes());
 
     public String generateJwtToken(Authentication authentication) {
 
