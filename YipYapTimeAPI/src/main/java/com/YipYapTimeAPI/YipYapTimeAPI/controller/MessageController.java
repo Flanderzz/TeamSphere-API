@@ -30,10 +30,12 @@ import java.util.List;
 @RequestMapping("/api/message")
 public class MessageController {
 
-    @Autowired
     private UserService userService;
-    @Autowired
     private MessageService messageService;
+    public MessageController(UserService userService, MessageService messageService) {
+        this.userService = userService;
+        this.messageService = messageService;
+    }
 
     @PostMapping("/create")
     public ResponseEntity<MessageDTO> sendMessageHandler(@RequestHeader("Authorization")String jwt, @RequestBody SendMessageRequest req) throws ChatException, UserException {

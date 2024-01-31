@@ -30,10 +30,8 @@ import java.util.List;
 @RequestMapping("/api/chat")
 public class ChatController {
 
-    @Autowired
     private ChatService chatService;
 
-    @Autowired
     private UserService userService;
 
     public ChatController(ChatService chatService, UserService userService) {

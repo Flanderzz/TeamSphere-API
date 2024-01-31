@@ -16,14 +16,10 @@ import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
-
-    @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Autowired
     private UserRepository userRepo;
 
-    @Autowired
     private JWTTokenProvider jwtTokenProvider;
 
     public UserServiceImpl(PasswordEncoder passwordEncoder, UserRepository userRepo, JWTTokenProvider jwtTokenProvider) {
@@ -40,8 +36,8 @@ public class UserServiceImpl implements UserService {
 
         System.out.println("update find user " + user);
 
-        if (req.getFull_name() != null) {
-            user.setUsername(req.getFull_name());
+        if (req.getUsername() != null) {
+            user.setUsername(req.getUsername());
         }
         if (req.getProfile_picture() != null) {
             user.setProfile_image(req.getProfile_picture());
