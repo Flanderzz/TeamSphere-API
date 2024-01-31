@@ -29,7 +29,7 @@ public class JWTTokenValidator extends OncePerRequestFilter {
 
 
 
-        String jwt =request.getHeader(JWTTokenConstants.HEADER);
+        String jwt =request.getHeader(JWTTokenConst.HEADER);
 
         System.out.println("validator jwt -------- "+jwt);
 
@@ -38,7 +38,7 @@ public class JWTTokenValidator extends OncePerRequestFilter {
 
                 jwt=jwt.substring(7);
 
-                SecretKey key=Keys.hmacShaKeyFor(JWTTokenConstants.JWT_KEY.getBytes());
+                SecretKey key=Keys.hmacShaKeyFor(JWTTokenConst.JWT_KEY.getBytes());
 
                 Claims claim=Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(jwt).getBody();
 
