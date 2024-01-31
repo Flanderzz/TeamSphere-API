@@ -2,7 +2,7 @@ package com.YipYapTimeAPI.YipYapTimeAPI.config;
 
 import org.springframework.beans.factory.annotation.Value;
 
-public class SecurityConst {
+public class JWTTokenConst {
     @Value("${env.JWT_KEY}")
     public static final String JWT_KEY = "kzjjbeiurwasdwadsawdsbZGyurZvzpaqekmeecfeeljsdwasdwaliuogcadwwsadwaderwmqzsduphbeheb";
 
