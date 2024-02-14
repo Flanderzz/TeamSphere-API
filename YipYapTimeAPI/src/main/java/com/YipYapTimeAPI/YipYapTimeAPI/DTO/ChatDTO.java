@@ -22,7 +22,6 @@ public class ChatDTO {
     private String chat_name;
     private String chat_image;
 
-    @Column(columnDefinition = "boolean default false")
     private Boolean is_group;
 
     private Set<UserDTO> admins= new HashSet<>();
