@@ -1,0 +1,33 @@
+server:
+  port: 5454
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    url: jdbc:mysql://localhost:3306/YipYapTimeDB
+    password: Devine23
+  profiles:
+    active: local
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    requested-heartbeat: 580
+    cache:
+      channel:
+        size: 25
+    virtual-host: /
+  main:
+    allow-bean-definition-overriding: true
+
+example:
+  rabbitmq:
+    privateQueue: privateMessageQueue
+    groupQueue: groupMessageQueue
+    exchange: amq.topic

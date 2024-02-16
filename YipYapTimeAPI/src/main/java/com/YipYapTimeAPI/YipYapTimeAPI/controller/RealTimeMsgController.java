@@ -9,44 +9,70 @@ import com.YipYapTimeAPI.YipYapTimeAPI.request.SendMessageRequest;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.ChatService;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.MessageService;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.UserService;
-import org.springframework.messaging.handler.annotation.Header;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.annotation.SendTo;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
-
-import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.handler.annotation.Header;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.support.MessageBuilder;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Iterator;
 
+@RequestMapping("/api/send")
+@RestController
 public class RealTimeMsgController {
-
-    private SimpMessagingTemplate simpMessagingTemplate;
-
+    private Binding groupBinding;
+    private Binding privateBinding;
+    private RabbitTemplate rabbitTemplate;
     private UserService userService;
-
     private MessageService messageService;
-
     private ChatService chatService;
 
-    public RealTimeMsgController(SimpMessagingTemplate simpMessagingTemplate, UserService userService, MessageService messageService, ChatService chatService) {
-        this.simpMessagingTemplate = simpMessagingTemplate;
+    public RealTimeMsgController(RabbitTemplate rabbitTemplate,
+                                 UserService userService,
+                                 MessageService messageService,
+                                 ChatService chatService,
+                                 Binding groupBinding,
+                                 Binding privateBinding
+                                 )
+    {
+        this.rabbitTemplate = rabbitTemplate;
         this.userService = userService;
         this.messageService = messageService;
         this.chatService = chatService;
+        this.groupBinding = groupBinding;
+        this.privateBinding = privateBinding;
     }
 
-    @MessageMapping("/message")
-    @SendTo("/group/public")
-    public Message receiveMessage(@Payload Message message){
+    @PostMapping("/message")
+    public ResponseEntity<String> receiveMessage(@RequestBody Message message) throws JsonProcessingException {
 
-        simpMessagingTemplate.convertAndSend("/group/"+message.getChat().getId().toString(), message);
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        String payload = mapper.writeValueAsString(message);
 
-        return message;
+        org.springframework.messaging.Message<String> channelMessage = MessageBuilder
+                .withPayload(payload)
+                .setHeader(MessageHeaders.CONTENT_TYPE, "Group_message")
+                .setHeader("MESSAGE_ID", message.getId())
+                .build();
+
+        rabbitTemplate.convertAndSend(groupBinding.getExchange(),groupBinding.getRoutingKey(), channelMessage);
+
+        return ResponseEntity.ok("Message sent: " + message);
     }
 
-    @MessageMapping("/chat/{groupId}")
-    public Message sendToUser(@Payload SendMessageRequest req, @Header("Authorization") String jwt, @DestinationVariable String groupId) throws ChatException, UserException {
+    @PostMapping("/chat/{groupId}")
+    public ResponseEntity<String> sendToUser(@Payload SendMessageRequest req, @Header("Authorization") String jwt, @DestinationVariable String groupId) throws ChatException, UserException {
         User user = userService.findUserProfile(jwt);
         req.setUserId(user.getId());
 
@@ -56,9 +82,9 @@ public class RealTimeMsgController {
 
         User reciverUser = receiver(chat, user);
 
-        simpMessagingTemplate.convertAndSendToUser(groupId, "/private", createdMessage);
+        rabbitTemplate.convertAndSend(privateBinding.getExchange(), privateBinding.getRoutingKey(), createdMessage);
 
-        return createdMessage;
+        return ResponseEntity.ok("Message sent: " + createdMessage);
     }
 
     public User receiver(Chat chat, User reqUser) {
