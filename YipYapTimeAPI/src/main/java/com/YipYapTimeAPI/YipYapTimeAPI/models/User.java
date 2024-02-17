@@ -46,4 +46,41 @@ public class User {
     public final int hashCode() {
         return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
     }
+
+    public static class Builder {
+        private Integer id;
+        private String username;
+        private String password;
+        private String email;
+        private String profile_image;
+
+        public Builder id(Integer id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder username(String username) {
+            this.username = username;
+            return this;
+        }
+
+        public Builder password(String password) {
+            this.password = password;
+            return this;
+        }
+
+        public Builder email(String email) {
+            this.email = email;
+            return this;
+        }
+
+        public Builder profileImage(String profileImage) {
+            this.profile_image = profileImage;
+            return this;
+        }
+
+        public User build() {
+            return new User(id, username, password, email, profile_image);
+        }
+    }
 }

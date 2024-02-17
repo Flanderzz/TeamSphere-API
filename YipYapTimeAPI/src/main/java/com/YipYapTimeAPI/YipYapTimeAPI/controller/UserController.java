@@ -6,6 +6,7 @@ import com.YipYapTimeAPI.YipYapTimeAPI.exception.UserException;
 import com.YipYapTimeAPI.YipYapTimeAPI.models.User;
 import com.YipYapTimeAPI.YipYapTimeAPI.request.UpdateUserRequest;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/user")
+@Slf4j
 public class UserController {
     private UserService userService;
 
@@ -32,31 +34,60 @@ public class UserController {
 
     @PutMapping("/update/{userId}")
     public ResponseEntity<UserDTO> updateUserHandler(@RequestBody UpdateUserRequest req, @PathVariable Integer userId) throws UserException {
-        User updatedUser = userService.updateUser(userId, req);
-        UserDTO UserDTO = UserDTOMapper.toUserDTO(updatedUser);
+        try {
+            log.info("Processing update user request for user with ID: {}", userId);
 
-        return new ResponseEntity<UserDTO>(UserDTO, HttpStatus.OK);
+            User updatedUser = userService.updateUser(userId, req);
+            UserDTO userDTO = UserDTOMapper.toUserDTO(updatedUser);
+
+            log.info("User with ID {} updated successfully", userId);
+
+            return new ResponseEntity<>(userDTO, HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Error during update user process for user with ID: {}", userId, e);
+            throw new UserException("Error during update user process" + e);
+        }
     }
 
     @GetMapping("/profile")
-    public ResponseEntity<UserDTO> getUserProfileHandler(@RequestHeader("Authorization")String jwt){
+    public ResponseEntity<UserDTO> getUserProfileHandler(@RequestHeader("Authorization") String jwt) {
+        try {
+            log.info("Processing get user profile request for user with JWT: {}", jwt);
 
-        User user = userService.findUserProfile(jwt);
+            User user = userService.findUserProfile(jwt);
 
-        UserDTO UserDTO = UserDTOMapper.toUserDTO(user);
+            UserDTO userDTO = UserDTOMapper.toUserDTO(user);
 
-        return new ResponseEntity<UserDTO>(UserDTO,HttpStatus.ACCEPTED);
+            log.info("User profile retrieved successfully for user with JWT: {}", jwt);
+
+            return new ResponseEntity<>(userDTO, HttpStatus.ACCEPTED);
+        } catch (Exception e) {
+            log.error("Error during get user profile process", e);
+            // We might want to handle this exception differently.
+            // Here, I'm letting it propagate to the client as a 500 Internal Server Error.
+            throw new RuntimeException("Error during get user profile process", e);
+        }
     }
 
     @GetMapping("/search")
     public ResponseEntity<HashSet<UserDTO>> searchUsersByName(@RequestParam("name") String name) {
+        try {
+            log.info("Processing search users by name request for name: {}", name);
 
-        List<User> users=userService.searchUser(name);
+            List<User> users = userService.searchUser(name);
 
-        HashSet<User> set=new HashSet<>(users);
+            HashSet<User> set = new HashSet<>(users);
 
-        HashSet<UserDTO> userDtos=UserDTOMapper.toUserDtos(set);
+            HashSet<UserDTO> userDtos = UserDTOMapper.toUserDtos(set);
 
-        return new ResponseEntity<>(userDtos,HttpStatus.ACCEPTED);
+            log.info("Users search completed successfully for name: {}", name);
+
+            return new ResponseEntity<>(userDtos, HttpStatus.ACCEPTED);
+        } catch (Exception e) {
+            log.error("Error during search users process for name: {}", name, e);
+            // We might want to handle this exception differently.
+            // Here, I'm letting it propagate to the client as a 500 Internal Server Error.
+            throw new RuntimeException("Error during search users process", e);
+        }
     }
 }

@@ -11,7 +11,7 @@ import com.YipYapTimeAPI.YipYapTimeAPI.request.RenameGroupChatRequest;
 import com.YipYapTimeAPI.YipYapTimeAPI.request.SingleChatRequest;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.ChatService;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,6 +28,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/chat")
+@Slf4j
 public class ChatController {
 
     private ChatService chatService;
@@ -42,7 +43,7 @@ public class ChatController {
     @PostMapping("/single")
     public ResponseEntity<ChatDTO> creatChatHandler(@RequestBody SingleChatRequest singleChatRequest, @RequestHeader("Authorization")  String jwt) throws UserException {
 
-        System.out.println("single chat --------");
+        log.info("single chat --------");
         User reqUser = userService.findUserProfile(jwt);
 
         Chat chat = chatService.createChat(reqUser.getId(),singleChatRequest.getUserId(),false);
