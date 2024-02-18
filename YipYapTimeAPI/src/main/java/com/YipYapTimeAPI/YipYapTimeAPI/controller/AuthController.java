@@ -63,7 +63,7 @@ public class AuthController {
             }
 
             // Creating a new user
-            User createdUser = new User.Builder()
+            User createdUser = User.builder()
                     .email(email)
                     .username(username)
                     .password(passwordEncoder.encode(password))

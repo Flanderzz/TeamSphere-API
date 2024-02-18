@@ -10,12 +10,12 @@ public class UserDTOMapper {
 
     public static UserDTO toUserDTO(User user) {
 
-        // TODO: add builder pattern instead of this
-        UserDTO userDto = new UserDTO();
-        userDto.setEmail(user.getEmail());
-        userDto.setUsername(user.getUsername());
-        userDto.setId(user.getId());
-        userDto.setProfile_picture(user.getProfile_image());
+        UserDTO userDto =   UserDTO.builder()
+                .email(user.getEmail())
+                .username(user.getUsername())
+                .id(user.getId())
+                .profile_picture(user.getProfile_image())
+                .build();
 
         return userDto;
     }

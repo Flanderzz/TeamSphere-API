@@ -15,16 +15,16 @@ public class MessageDTOMapper {
         ChatDTO chatDto = ChatDTOMapper.toChatDto(message.getChat());
         UserDTO userDto = UserDTOMapper.toUserDTO(message.getUsername());
 
-        // TODO: add builder pattern instead of this
-        MessageDTO messageDto = new MessageDTO();
-        messageDto.setId(message.getId());
-        messageDto.setChat(chatDto);
-        messageDto.setContent(message.getContent());
-        messageDto.setIs_read(message.getIs_read());
-        messageDto.setTimeStamp(message.getTimeStamp());
-        messageDto.setUser(userDto);
+        MessageDTO messageDTO = MessageDTO.builder()
+                .id(message.getId())
+                .chat(chatDto)
+                .content(message.getContent())
+                .is_read(message.getIs_read())
+                .timeStamp(message.getTimeStamp())
+                .user(userDto)
+                .build();
 
-        return messageDto;
+        return messageDTO;
     }
 
     public static List<MessageDTO> toMessageDtos(List<Message> messages){

@@ -67,8 +67,8 @@ public class UserServiceImpl implements UserService {
         Optional<User> opt = userRepo.findById(userId);
 
         if (opt.isPresent()) {
-            log.info("Found user with ID {}: {}", userId, user);
             User user = opt.get();
+            log.info("Found user with ID {}: {}", userId, user);
 
             return user;
         }

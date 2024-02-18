@@ -21,16 +21,17 @@ public class ChatDTOMapper {
 
         Set<UserDTO> admins = UserDTOMapper.toUserDtos(chat.getAdmins());
 
-        // TODO: add builder pattern instead of this
-        ChatDTO chatDto = new ChatDTO();
-        chatDto.setId(chat.getId());
-        chatDto.setChat_image(chat.getChat_image());
-        chatDto.setChat_name(chat.getChat_name());
-        chatDto.setCreated_by(userDto);
-        chatDto.setIs_group(chat.getIs_group());
-        chatDto.setMessages(messageDtos);
-        chatDto.setUsers(userDtos);
-        chatDto.setAdmins(admins);
+        ChatDTO chatDto = ChatDTO.builder()
+                .id(chat.getId())
+                .chat_image(chat.getChat_image())
+                .chat_name(chat.getChat_name())
+                .created_by(userDto)
+                .is_group(chat.getIs_group())
+                .messages(messageDtos)
+                .users(userDtos)
+                .admins(admins)
+                .build();
+
 
         return chatDto;
     }
