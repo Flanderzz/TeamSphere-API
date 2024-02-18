@@ -11,6 +11,7 @@ import com.YipYapTimeAPI.YipYapTimeAPI.request.SendMessageRequest;
 import com.YipYapTimeAPI.YipYapTimeAPI.response.ApiResponse;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.MessageService;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +29,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/message")
+@Slf4j
 public class MessageController {
 
     private UserService userService;
@@ -40,36 +42,60 @@ public class MessageController {
     @PostMapping("/create")
     public ResponseEntity<MessageDTO> sendMessageHandler(@RequestHeader("Authorization")String jwt, @RequestBody SendMessageRequest req) throws ChatException, UserException {
 
-        User reqUser = userService.findUserProfile(jwt);
+        try {
+            log.info("Processing send message request for user with JWT: {}", jwt);
 
-        req.setUserId(reqUser.getId());
+            User reqUser = userService.findUserProfile(jwt);
 
-        Message message = messageService.sendMessage(req);
+            req.setUserId(reqUser.getId());
 
-        MessageDTO messageDto = MessageDTOMapper.toMessageDto(message);
+            Message message = messageService.sendMessage(req);
 
-        return new ResponseEntity<MessageDTO>(messageDto, HttpStatus.OK);
+            MessageDTO messageDto = MessageDTOMapper.toMessageDto(message);
+
+            log.info("Message sent successfully by user with JWT: {}", jwt);
+
+            return new ResponseEntity<>(messageDto, HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Error during send message process", e);
+            throw new ChatException("Error during send message process" + e);
+        }
     }
 
     @GetMapping("/chat/{chatId}")
-    public ResponseEntity<List<MessageDTO>> getChatsMessageHandler(@PathVariable Integer chatId) throws ChatException{
+    public ResponseEntity<List<MessageDTO>> getChatsMessageHandler(@PathVariable Integer chatId) throws ChatException {
+        try {
+            log.info("Processing get messages for chat with ID: {}", chatId);
 
-        List<Message> messages = messageService.getChatsMessages(chatId);
+            List<Message> messages = messageService.getChatsMessages(chatId);
 
-        List<MessageDTO> messageDtos = MessageDTOMapper.toMessageDtos(messages);
+            List<MessageDTO> messageDtos = MessageDTOMapper.toMessageDtos(messages);
 
-        return new ResponseEntity<List<MessageDTO>>(messageDtos,HttpStatus.ACCEPTED);
+            log.info("Retrieved {} messages for chat with ID: {}", messageDtos.size(), chatId);
 
+            return new ResponseEntity<>(messageDtos, HttpStatus.ACCEPTED);
+        } catch (Exception e) {
+            log.error("Error during get messages process for chat with ID: {}", chatId, e);
+            throw new ChatException("Error during get messages process" + e);
+        }
     }
 
     @DeleteMapping("/{messageId}")
     public ResponseEntity<ApiResponse> deleteMessageHandler(@PathVariable Integer messageId) throws MessageException {
+        try {
+            log.info("Processing delete message request for message with ID: {}", messageId);
 
-        messageService.deleteMessage(messageId);
+            messageService.deleteMessage(messageId);
 
-        ApiResponse res = new ApiResponse("message deleted",true);
+            log.info("Message with ID {} deleted successfully", messageId);
 
-        return new ResponseEntity<ApiResponse>(res,HttpStatus.ACCEPTED);
+            ApiResponse res = new ApiResponse("Message deleted", true);
+
+            return new ResponseEntity<>(res, HttpStatus.ACCEPTED);
+        } catch (Exception e) {
+            log.error("Error during delete message process for message with ID: {}", messageId, e);
+            throw new MessageException("Error during delete message process" + e);
+        }
     }
 
 }

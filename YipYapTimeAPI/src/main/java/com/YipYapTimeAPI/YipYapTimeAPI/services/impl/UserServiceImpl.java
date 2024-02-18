@@ -6,15 +6,18 @@ import com.YipYapTimeAPI.YipYapTimeAPI.models.User;
 import com.YipYapTimeAPI.YipYapTimeAPI.repository.UserRepository;
 import com.YipYapTimeAPI.YipYapTimeAPI.request.UpdateUserRequest;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class UserServiceImpl implements UserService {
     private PasswordEncoder passwordEncoder;
 
@@ -31,28 +34,41 @@ public class UserServiceImpl implements UserService {
     @Override
     public User updateUser(Integer userId, UpdateUserRequest req) throws UserException {
 
-        System.out.println("finding user ");
+        log.info("Attempting to update user with ID: {}", userId);
         User user = findUserById(userId);
 
-        System.out.println("update find user " + user);
+        if (user == null) {
+            log.error("User with ID= {}, not found. Unable to update.", userId);
+            throw new UserException("User not found");
+        }
+
+        log.info("Found user for update: {}", user);
 
         if (req.getUsername() != null) {
+            log.info("Updating username to: {}", req.getUsername());
             user.setUsername(req.getUsername());
         }
         if (req.getProfile_picture() != null) {
+            log.info("Updating profile picture to: {}", req.getProfile_picture());
             user.setProfile_image(req.getProfile_picture());
         }
 
-        return userRepo.save(user);
+        // Save the updated user
+        User updatedUser = userRepo.save(user);
+        log.info("User updated successfully. Updated user details: {}", updatedUser);
+
+        return updatedUser;
     }
 
     @Override
     public User findUserById(Integer userId) throws UserException {
+        log.info("Attempting to find user by ID: {}", userId);
 
         Optional<User> opt = userRepo.findById(userId);
 
         if (opt.isPresent()) {
             User user = opt.get();
+            log.info("Found user with ID {}: {}", userId, user);
 
             return user;
         }
@@ -61,20 +77,36 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findUserProfile(String jwt) {
+        log.info("Attempting to find user profile using JWT");
+
         String email = jwtTokenProvider.getEmailFromToken(jwt);
+
+        log.info("Extracted email from JWT: {}", email);
 
         Optional<User> opt = userRepo.findByEmail(email);
 
         if (opt.isPresent()) {
+            log.info("Found user profile for email {}: {}", email, opt.get());
             return opt.get();
         }
 
-        throw new BadCredentialsException("received invalid token!");
+        log.error("User profile not found for email: {}", email);
+
+        throw new BadCredentialsException("Received invalid token!");
     }
 
     @Override
     public List<User> searchUser(String query) {
-        return userRepo.searchUsers(query);
+        log.info("Searching users with query: {}", query);
 
+        List<User> searchResults = userRepo.searchUsers(query);
+
+        if (!searchResults.isEmpty()) {
+            log.info("Found {} user(s) matching the query.", searchResults.size());
+            return searchResults;
+        }
+
+        log.info("No users found matching the query: {}", query);
+        return Collections.emptyList();
     }
 }

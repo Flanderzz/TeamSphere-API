@@ -7,6 +7,7 @@ import java.util.Set;
 
 import javax.crypto.SecretKey;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 
@@ -17,14 +18,12 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class JWTTokenProvider {
 
     SecretKey key = Keys.hmacShaKeyFor(JWTTokenConst.JWT_KEY.getBytes());
 
     public String generateJwtToken(Authentication authentication) {
-
-
-
         String jwt=Jwts.builder().setIssuer("YipYapTime")
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(new Date().getTime()+86400000))
@@ -36,15 +35,13 @@ public class JWTTokenProvider {
     }
 
     public String getEmailFromToken(String token) {
-        System.out.println("before claims ----------- ");
+        log.info("before claims ----------- ");
 
         token=token.substring(7);
 
         Claims claims= Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
 
-        String email= String.valueOf(claims.get("email"));
-
-        return email;
+        return String.valueOf(claims.get("email"));
     }
 
     public String populateAuthorities(Collection<? extends GrantedAuthority> collection) {

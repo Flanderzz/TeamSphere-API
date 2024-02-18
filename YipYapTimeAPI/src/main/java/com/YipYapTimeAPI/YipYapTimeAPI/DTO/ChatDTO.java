@@ -1,11 +1,7 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.DTO;
 
 import jakarta.persistence.Column;
-import lombok.Setter;
-import lombok.Getter;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -17,6 +13,7 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
+@Builder
 public class ChatDTO {
     private Integer id;
     private String chat_name;

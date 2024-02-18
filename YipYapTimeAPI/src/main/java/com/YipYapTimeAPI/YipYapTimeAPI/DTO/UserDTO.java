@@ -1,10 +1,6 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.DTO;
 
-import lombok.Setter;
-import lombok.Getter;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 
 @Setter
@@ -12,6 +8,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
+@Builder
 public class UserDTO {
 
     private Integer id;

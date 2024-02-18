@@ -9,6 +9,7 @@ import com.YipYapTimeAPI.YipYapTimeAPI.request.SendMessageRequest;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.ChatService;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.MessageService;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -19,6 +20,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.util.Iterator;
 
+@Slf4j
 public class RealTimeMsgController {
 
     private SimpMessagingTemplate simpMessagingTemplate;
@@ -47,18 +49,27 @@ public class RealTimeMsgController {
 
     @MessageMapping("/chat/{groupId}")
     public Message sendToUser(@Payload SendMessageRequest req, @Header("Authorization") String jwt, @DestinationVariable String groupId) throws ChatException, UserException {
-        User user = userService.findUserProfile(jwt);
-        req.setUserId(user.getId());
+        try {
+            log.info("Processing send message request for user with JWT: {} to group: {}", jwt, groupId);
 
-        Chat chat = chatService.findChatById(req.getChatId());
+            User user = userService.findUserProfile(jwt);
+            req.setUserId(user.getId());
 
-        Message createdMessage = messageService.sendMessage(req);
+            Chat chat = chatService.findChatById(req.getChatId());
 
-        User reciverUser = receiver(chat, user);
+            Message createdMessage = messageService.sendMessage(req);
 
-        simpMessagingTemplate.convertAndSendToUser(groupId, "/private", createdMessage);
+            User receiverUser = receiver(chat, user);
 
-        return createdMessage;
+            simpMessagingTemplate.convertAndSendToUser(groupId, "/private", createdMessage);
+
+            log.info("Message sent successfully to group: {} by user with JWT: {}", groupId, jwt);
+
+            return createdMessage;
+        } catch (Exception e) {
+            log.error("Error during send message process", e);
+            throw new ChatException("Error during send message process" + e);
+        }
     }
 
     public User receiver(Chat chat, User reqUser) {

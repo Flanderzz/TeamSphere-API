@@ -10,11 +10,11 @@ import java.util.List;
 @Service
 public interface UserService{
 
-    public User findUserProfile(String jwt);
+    User findUserProfile(String jwt);
 
-    public User updateUser(Integer userId, UpdateUserRequest req) throws UserException;
+    User updateUser(Integer userId, UpdateUserRequest req) throws UserException;
 
-    public User findUserById(Integer userId) throws UserException;
+    User findUserById(Integer userId) throws UserException;
 
-    public List<User> searchUser(String query);
+    List<User> searchUser(String query);
 }
