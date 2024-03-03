@@ -6,10 +6,13 @@ import com.YipYapTimeAPI.YipYapTimeAPI.models.User;
 import com.YipYapTimeAPI.YipYapTimeAPI.repository.UserRepository;
 import com.YipYapTimeAPI.YipYapTimeAPI.request.LoginRequest;
 import com.YipYapTimeAPI.YipYapTimeAPI.response.AuthResponse;
+import com.YipYapTimeAPI.YipYapTimeAPI.response.CloudflareApiResponse;
+import com.YipYapTimeAPI.YipYapTimeAPI.services.CloudflareApiService;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.impl.CustomUserDetailsService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,12 +20,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 
+import java.util.Objects;
 import java.util.Optional;
 
 @RestController
@@ -38,17 +40,26 @@ public class AuthController {
 
     private CustomUserDetailsService customUserDetails;
 
-    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder, JWTTokenProvider jwtTokenProvider, CustomUserDetailsService customUserDetails) {
+    private CloudflareApiService cloudflareApiService;
+
+    public AuthController(UserRepository userRepository,
+                          PasswordEncoder passwordEncoder,
+                          JWTTokenProvider jwtTokenProvider,
+                          CustomUserDetailsService customUserDetails,
+                          CloudflareApiService cloudflareApiService
+    ) {
         this.userRepository=userRepository;
         this.passwordEncoder=passwordEncoder;
         this.jwtTokenProvider=jwtTokenProvider;
         this.customUserDetails=customUserDetails;
+        this.cloudflareApiService=cloudflareApiService;
     }
 
-    @PostMapping("/signup")
-    public ResponseEntity<AuthResponse> userSignupMethod (@Valid @RequestBody User user) throws UserException {
+    @PostMapping(value="/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<AuthResponse> userSignupMethod (@Valid @ModelAttribute User user, @RequestParam("file") MultipartFile file) throws UserException {
         try {
-            log.info("Processing signup request for user with email: {}", user.getEmail());
+            log.info("Processing signup request for user with email: {}, username:{}",
+                    user.getEmail(),user.getUsername());
 
             String email = user.getEmail();
             String password = user.getPassword();
@@ -62,15 +73,6 @@ public class AuthController {
                 throw new UserException("Email is already used with another account");
             }
 
-            // Creating a new user
-            User createdUser = User.builder()
-                    .email(email)
-                    .username(username)
-                    .password(passwordEncoder.encode(password))
-                    .build();
-
-            userRepository.save(createdUser);
-
             log.info("User with email {} successfully created", email);
 
             // Authenticate user and generate JWT token
@@ -80,6 +82,22 @@ public class AuthController {
             String token = jwtTokenProvider.generateJwtToken(authentication);
 
             AuthResponse authResponse = new AuthResponse(token, true);
+
+            CloudflareApiResponse responseEntity = cloudflareApiService.uploadImage(file);
+
+            String baseUrl = Objects.requireNonNull(responseEntity.getResult().getVariants().get(0));
+            String profile_url = baseUrl.substring(0, baseUrl.lastIndexOf("/") + 1) + "chatProfilePicture";
+
+
+            // Creating a new user
+            User createdUser = User.builder()
+                    .email(email)
+                    .username(username)
+                    .password(passwordEncoder.encode(password))
+                    .profile_image(profile_url)
+                    .build();
+
+            userRepository.save(createdUser);
 
             log.info("Signup process completed successfully for user with email: {}", email);
 
