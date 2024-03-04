@@ -54,7 +54,7 @@ public class Chat {
 
     @OneToMany
     @ToString.Exclude
-    private List<Message> messages=new ArrayList<>();
+    private List<Messages> messages=new ArrayList<>();
 
     @Override
     public final boolean equals(Object o) {

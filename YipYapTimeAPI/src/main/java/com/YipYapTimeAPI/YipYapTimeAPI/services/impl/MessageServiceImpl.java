@@ -4,7 +4,7 @@ import com.YipYapTimeAPI.YipYapTimeAPI.exception.ChatException;
 import com.YipYapTimeAPI.YipYapTimeAPI.exception.MessageException;
 import com.YipYapTimeAPI.YipYapTimeAPI.exception.UserException;
 import com.YipYapTimeAPI.YipYapTimeAPI.models.Chat;
-import com.YipYapTimeAPI.YipYapTimeAPI.models.Message;
+import com.YipYapTimeAPI.YipYapTimeAPI.models.Messages;
 import com.YipYapTimeAPI.YipYapTimeAPI.models.User;
 import com.YipYapTimeAPI.YipYapTimeAPI.repository.MessageRepository;
 import com.YipYapTimeAPI.YipYapTimeAPI.request.SendMessageRequest;
@@ -34,7 +34,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public Message sendMessage(SendMessageRequest req) throws UserException, ChatException {
+    public Messages sendMessage(SendMessageRequest req) throws UserException, ChatException {
 
         log.info("Attempting to send a message");
 
@@ -45,7 +45,7 @@ public class MessageServiceImpl implements MessageService {
             Chat chat = chatService.findChatById(req.getChatId());
             log.info("Found chat for sending message: {}", chat);
 
-            Message message = Message.builder()
+            Messages messages = Messages.builder()
                 .chat(chat)
                 .username(user)
                 .content(req.getContent())
@@ -53,9 +53,9 @@ public class MessageServiceImpl implements MessageService {
                 .is_read(false)
                 .build();
 
-            log.info("Creating and saving the message: {}", message);
+            log.info("Creating and saving the message: {}", messages);
 
-            return messageRepo.save(message);
+            return messageRepo.save(messages);
         } catch (UserException | ChatException e) {
             log.error("Error sending message: {}", e.getMessage());
             throw e;
@@ -70,10 +70,10 @@ public class MessageServiceImpl implements MessageService {
         log.info("Attempting to delete message with ID: {}", messageId);
 
         try {
-            Message message = findMessageById(messageId);
-            log.info("Found message for deletion: {}", message);
+            Messages messages = findMessageById(messageId);
+            log.info("Found message for deletion: {}", messages);
 
-            messageRepo.deleteById(message.getId());
+            messageRepo.deleteById(messages.getId());
             log.info("Message deleted successfully");
 
         } catch (MessageException e) {
@@ -86,14 +86,14 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public List<Message> getChatsMessages(Integer chatId) throws ChatException {
+    public List<Messages> getChatsMessages(Integer chatId) throws ChatException {
         log.info("Attempting to retrieve messages for chat with ID: {}", chatId);
 
         try {
             Chat chat = chatService.findChatById(chatId);
             log.info("Found chat for retrieving messages: {}", chat);
 
-            List<Message> messages = messageRepo.findMessageByChatId(chatId);
+            List<Messages> messages = messageRepo.findMessageByChatId(chatId);
             log.info("Retrieved {} messages for chat with ID: {}", messages.size(), chatId);
 
             return messages;
@@ -107,16 +107,16 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public Message findMessageById(Long messageId) throws MessageException {
+    public Messages findMessageById(Long messageId) throws MessageException {
         log.info("Attempting to find message by ID: {}", messageId);
 
         try {
-            Optional<Message> optionalMessage = messageRepo.findById(messageId);
+            Optional<Messages> optionalMessage = messageRepo.findById(messageId);
 
             if (optionalMessage.isPresent()) {
-                Message message = optionalMessage.get();
-                log.info("Found message for ID {}: {}", messageId, message);
-                return message;
+                Messages messages = optionalMessage.get();
+                log.info("Found message for ID {}: {}", messageId, messages);
+                return messages;
             }
 
             log.error("Message with ID {} not found. Unable to retrieve.", messageId);

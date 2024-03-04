@@ -5,14 +5,13 @@ import com.YipYapTimeAPI.YipYapTimeAPI.DTOmapper.MessageDTOMapper;
 import com.YipYapTimeAPI.YipYapTimeAPI.exception.ChatException;
 import com.YipYapTimeAPI.YipYapTimeAPI.exception.MessageException;
 import com.YipYapTimeAPI.YipYapTimeAPI.exception.UserException;
-import com.YipYapTimeAPI.YipYapTimeAPI.models.Message;
+import com.YipYapTimeAPI.YipYapTimeAPI.models.Messages;
 import com.YipYapTimeAPI.YipYapTimeAPI.models.User;
 import com.YipYapTimeAPI.YipYapTimeAPI.request.SendMessageRequest;
 import com.YipYapTimeAPI.YipYapTimeAPI.response.ApiResponse;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.MessageService;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.UserService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -49,9 +48,9 @@ public class MessageController {
 
             req.setUserId(reqUser.getId());
 
-            Message message = messageService.sendMessage(req);
+            Messages messages = messageService.sendMessage(req);
 
-            MessageDTO messageDto = MessageDTOMapper.toMessageDto(message);
+            MessageDTO messageDto = MessageDTOMapper.toMessageDto(messages);
 
             log.info("Message sent successfully by user with JWT: {}", jwt);
 
@@ -67,7 +66,7 @@ public class MessageController {
         try {
             log.info("Processing get messages for chat with ID: {}", chatId);
 
-            List<Message> messages = messageService.getChatsMessages(chatId);
+            List<Messages> messages = messageService.getChatsMessages(chatId);
 
             List<MessageDTO> messageDtos = MessageDTOMapper.toMessageDtos(messages);
 

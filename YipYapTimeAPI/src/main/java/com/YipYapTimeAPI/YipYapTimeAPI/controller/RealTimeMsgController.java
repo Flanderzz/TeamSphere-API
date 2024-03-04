@@ -3,7 +3,7 @@ package com.YipYapTimeAPI.YipYapTimeAPI.controller;
 import com.YipYapTimeAPI.YipYapTimeAPI.exception.ChatException;
 import com.YipYapTimeAPI.YipYapTimeAPI.exception.UserException;
 import com.YipYapTimeAPI.YipYapTimeAPI.models.Chat;
-import com.YipYapTimeAPI.YipYapTimeAPI.models.Message;
+import com.YipYapTimeAPI.YipYapTimeAPI.models.Messages;
 import com.YipYapTimeAPI.YipYapTimeAPI.models.User;
 import com.YipYapTimeAPI.YipYapTimeAPI.request.SendMessageRequest;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.ChatService;
@@ -40,15 +40,15 @@ public class RealTimeMsgController {
 
     @MessageMapping("/message")
     @SendTo("/group/public")
-    public Message receiveMessage(@Payload Message message){
+    public Messages receiveMessage(@Payload Messages messages){
 
-        simpMessagingTemplate.convertAndSend("/group/"+message.getChat().getId().toString(), message);
+        simpMessagingTemplate.convertAndSend("/group/"+ messages.getChat().getId().toString(), messages);
 
-        return message;
+        return messages;
     }
 
     @MessageMapping("/chat/{groupId}")
-    public Message sendToUser(@Payload SendMessageRequest req, @Header("Authorization") String jwt, @DestinationVariable String groupId) throws ChatException, UserException {
+    public Messages sendToUser(@Payload SendMessageRequest req, @Header("Authorization") String jwt, @DestinationVariable String groupId) throws ChatException, UserException {
         try {
             log.info("Processing send message request for user with JWT: {} to group: {}", jwt, groupId);
 
@@ -57,15 +57,15 @@ public class RealTimeMsgController {
 
             Chat chat = chatService.findChatById(req.getChatId());
 
-            Message createdMessage = messageService.sendMessage(req);
+            Messages createdMessages = messageService.sendMessage(req);
 
             User receiverUser = receiver(chat, user);
 
-            simpMessagingTemplate.convertAndSendToUser(groupId, "/private", createdMessage);
+            simpMessagingTemplate.convertAndSendToUser(groupId, "/private", createdMessages);
 
             log.info("Message sent successfully to group: {} by user with JWT: {}", groupId, jwt);
 
-            return createdMessage;
+            return createdMessages;
         } catch (Exception e) {
             log.error("Error during send message process", e);
             throw new ChatException("Error during send message process" + e);
