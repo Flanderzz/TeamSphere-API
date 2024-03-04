@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.UUID;
+
 
 @Setter
 @Getter
@@ -15,8 +17,7 @@ import lombok.ToString;
 @ToString
 @Builder
 public class UserDTO {
-
-    private Integer id;
+    private UUID id;
 
     private String username;
 

@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public class MessageDTO {
     private String content;
 
-    private Integer id;
+    private Long id;
 
     private LocalDateTime timeStamp;
 

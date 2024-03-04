@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.UUID;
 
 
 @NoArgsConstructor
@@ -14,7 +15,7 @@ import java.util.List;
 @Setter
 public class GroupChatRequest {
 
-    private List<Integer> userIds;
+    private List<UUID> userIds;
 
     private String chat_name;
 

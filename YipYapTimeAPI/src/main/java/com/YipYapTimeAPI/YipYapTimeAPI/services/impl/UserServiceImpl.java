@@ -7,7 +7,6 @@ import com.YipYapTimeAPI.YipYapTimeAPI.repository.UserRepository;
 import com.YipYapTimeAPI.YipYapTimeAPI.request.UpdateUserRequest;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.UserService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -15,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -32,7 +32,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User updateUser(Integer userId, UpdateUserRequest req) throws UserException {
+    public User updateUser(UUID userId, UpdateUserRequest req) throws UserException {
 
         log.info("Attempting to update user with ID: {}", userId);
         User user = findUserById(userId);
@@ -61,7 +61,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User findUserById(Integer userId) throws UserException {
+    public User findUserById(UUID userId) throws UserException {
         log.info("Attempting to find user by ID: {}", userId);
 
         Optional<User> opt = userRepo.findById(userId);

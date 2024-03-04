@@ -16,8 +16,8 @@ public interface MessageService {
 
     List<Message> getChatsMessages(Integer chatId) throws ChatException;
 
-    Message findMessageById(Integer messageId) throws MessageException;
+    Message findMessageById(Long messageId) throws MessageException;
 
-    void deleteMessage(Integer messageId) throws MessageException;
+    void deleteMessage(Long messageId) throws MessageException;
 
 }

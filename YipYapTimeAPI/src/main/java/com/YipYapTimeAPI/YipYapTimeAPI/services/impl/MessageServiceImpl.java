@@ -45,12 +45,13 @@ public class MessageServiceImpl implements MessageService {
             Chat chat = chatService.findChatById(req.getChatId());
             log.info("Found chat for sending message: {}", chat);
 
-            Message message = new Message();
-            message.setChat(chat);
-            message.setUsername(user);
-            message.setContent(req.getContent());
-            message.setTimeStamp(LocalDateTime.now());
-            message.setIs_read(false);
+            Message message = Message.builder()
+                .chat(chat)
+                .username(user)
+                .content(req.getContent())
+                .timeStamp(LocalDateTime.now())
+                .is_read(false)
+                .build();
 
             log.info("Creating and saving the message: {}", message);
 
@@ -65,7 +66,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public void deleteMessage(Integer messageId) throws MessageException {
+    public void deleteMessage(Long messageId) throws MessageException {
         log.info("Attempting to delete message with ID: {}", messageId);
 
         try {
@@ -106,7 +107,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public Message findMessageById(Integer messageId) throws MessageException {
+    public Message findMessageById(Long messageId) throws MessageException {
         log.info("Attempting to find message by ID: {}", messageId);
 
         try {

@@ -8,12 +8,13 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 public interface ChatRepository extends JpaRepository<Chat, Integer> {
 
     @Query("select c from Chat c join c.users u where u.id=:userId")
-    List<Chat> findChatByUserId(Integer userId);
+    List<Chat> findChatByUserId(UUID userId);
 
     @Query("select c from Chat c Where c.is_group=false And :user Member of c.users And :reqUser Member of c.users")
     Chat findSingleChatByUsersId(@Param("user") User user, @Param("reqUser") User reqUser);

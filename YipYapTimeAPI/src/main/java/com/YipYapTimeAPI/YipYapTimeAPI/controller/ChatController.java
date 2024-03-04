@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/chat")
@@ -88,7 +89,7 @@ public class ChatController {
     }
 
     @PutMapping("/{chatId}/add/{userId}")
-    public ResponseEntity<ChatDTO> addUserToGroupHandler(@PathVariable Integer chatId,@PathVariable Integer userId) throws UserException, ChatException{
+    public ResponseEntity<ChatDTO> addUserToGroupHandler(@PathVariable Integer chatId,@PathVariable UUID userId) throws UserException, ChatException{
 
         Chat chat = chatService.addUserToGroup(userId, chatId);
 
@@ -110,7 +111,7 @@ public class ChatController {
     }
 
     @PutMapping("/{chatId}/remove/{userId}")
-    public ResponseEntity<ChatDTO> removeFromGroupHandler(@RequestHeader("Authorization") String jwt, @PathVariable Integer chatId,@PathVariable Integer userId) throws UserException, ChatException{
+    public ResponseEntity<ChatDTO> removeFromGroupHandler(@RequestHeader("Authorization") String jwt, @PathVariable Integer chatId,@PathVariable UUID userId) throws UserException, ChatException{
 
         User reqUser=userService.findUserProfile(jwt);
 
@@ -122,7 +123,7 @@ public class ChatController {
     }
 
     @DeleteMapping("/delete/{chatId}/{userId}")
-    public ResponseEntity<ChatDTO> deleteChatHandler(@PathVariable Integer chatId, @PathVariable Integer userId) throws ChatException, UserException{
+    public ResponseEntity<ChatDTO> deleteChatHandler(@PathVariable Integer chatId, @PathVariable UUID userId) throws ChatException, UserException{
 
         Chat chat = chatService.deleteChat(chatId, userId);
         ChatDTO chatDto = ChatDTOMapper.toChatDto(chat);

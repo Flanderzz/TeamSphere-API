@@ -10,7 +10,7 @@ public class UserDTOMapper {
 
     public static UserDTO toUserDTO(User user) {
 
-        UserDTO userDto =   UserDTO.builder()
+        UserDTO userDto = UserDTO.builder()
                 .email(user.getEmail())
                 .username(user.getUsername())
                 .id(user.getId())
@@ -27,7 +27,6 @@ public class UserDTOMapper {
             UserDTO userDto=toUserDTO(user);
             userDtos.add(userDto);
         }
-
         return userDtos;
     }
 }

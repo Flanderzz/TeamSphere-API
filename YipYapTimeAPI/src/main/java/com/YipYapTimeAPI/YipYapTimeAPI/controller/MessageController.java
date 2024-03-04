@@ -81,7 +81,7 @@ public class MessageController {
     }
 
     @DeleteMapping("/{messageId}")
-    public ResponseEntity<ApiResponse> deleteMessageHandler(@PathVariable Integer messageId) throws MessageException {
+    public ResponseEntity<ApiResponse> deleteMessageHandler(@PathVariable Long messageId) throws MessageException {
         try {
             log.info("Processing delete message request for message with ID: {}", messageId);
 

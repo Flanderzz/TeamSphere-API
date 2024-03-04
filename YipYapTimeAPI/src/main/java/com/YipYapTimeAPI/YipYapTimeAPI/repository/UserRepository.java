@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public interface UserRepository  extends JpaRepository<User, Integer> {
@@ -18,4 +19,5 @@ public interface UserRepository  extends JpaRepository<User, Integer> {
     List<User> searchUsers(@Param("name") String name);
 
 
+    Optional<User> findById(UUID userId);
 }

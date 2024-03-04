@@ -10,8 +10,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class AuthResponse {
-
     private String jwt;
-
     private boolean status;
 }

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -28,7 +29,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public Chat createChat(Integer reqUserId, Integer userId2, boolean isGroup) throws UserException {
+    public Chat createChat(UUID reqUserId, UUID userId2, boolean isGroup) throws UserException {
         try {
             log.info("Creating chat. reqUserId: {}, userId2: {}, isGroup: {}", reqUserId, userId2, isGroup);
 
@@ -81,7 +82,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public List<Chat> findAllChatByUserId(Integer userId) throws UserException {
+    public List<Chat> findAllChatByUserId(UUID userId) throws UserException {
         try {
             log.info("Finding all chats for user with ID: {}", userId);
 
@@ -99,7 +100,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public Chat deleteChat(Integer chatId, Integer userId) throws ChatException, UserException {
+    public Chat deleteChat(Integer chatId, UUID userId) throws ChatException, UserException {
         try {
             log.info("Deleting chat with ID: {} by user with ID: {}", chatId, userId);
 
@@ -123,7 +124,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public Chat createGroup(GroupChatRequest req, Integer reqUserId) throws UserException {
+    public Chat createGroup(GroupChatRequest req, UUID reqUserId) throws UserException {
         try {
             log.info("Creating group chat. Requested by user with ID: {}", reqUserId);
 
@@ -134,7 +135,7 @@ public class ChatServiceImpl implements ChatService {
             chat.setCreated_by(reqUser);
             chat.getUsers().add(reqUser);
 
-            for (Integer userId : req.getUserIds()) {
+            for (UUID userId : req.getUserIds()) {
                 User user = userService.findUserById(userId);
                 if (user != null) {
                     chat.getUsers().add(user);
@@ -144,6 +145,12 @@ public class ChatServiceImpl implements ChatService {
                 }
             }
 
+            //TODO: Add builder pattern here
+//            chat.builder().chat_name(req.getChat_name())
+////                    .chat_image(req.getChat_image())
+////                    .is_group(true)
+////                    .admins(reqUser
+////                    .build();
             chat.setChat_name(req.getChat_name());
             chat.setChat_image(req.getChat_image());
             chat.setIs_group(true);
@@ -162,7 +169,7 @@ public class ChatServiceImpl implements ChatService {
 
 
     @Override
-    public Chat addUserToGroup(Integer userId, Integer chatId) throws UserException, ChatException {
+    public Chat addUserToGroup(UUID userId, Integer chatId) throws UserException, ChatException {
         try {
             log.info("Adding user with ID {} to group chat with ID: {}", userId, chatId);
 
@@ -183,7 +190,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public Chat renameGroup(Integer chatId, String groupName, Integer reqUserId) throws ChatException, UserException {
+    public Chat renameGroup(Integer chatId, String groupName, UUID reqUserId) throws ChatException, UserException {
         try {
             log.info("Renaming group chat with ID: {} to: {} by user with ID: {}", chatId, groupName, reqUserId);
 
@@ -205,7 +212,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public Chat removeFromGroup(Integer chatId, Integer userId, Integer reqUserId) throws UserException, ChatException {
+    public Chat removeFromGroup(Integer chatId, UUID userId, UUID reqUserId) throws UserException, ChatException {
         try {
             log.info("Removing user with ID {} from group chat with ID: {} by user with ID: {}", userId, chatId, reqUserId);
 
