@@ -1,8 +1,11 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.services.impl;
 
+import com.YipYapTimeAPI.YipYapTimeAPI.models.User;
+import com.YipYapTimeAPI.YipYapTimeAPI.repository.UserRepository;
 import com.YipYapTimeAPI.YipYapTimeAPI.response.CloudflareApiResponse;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.CloudflareApiService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpEntity;
@@ -19,7 +22,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Objects;
-import java.util.UUID;
 
 @Service
 @Slf4j
@@ -32,14 +34,14 @@ public class CloudflareApiServiceImpl implements CloudflareApiService {
     private String cloudflareAccountID;
     private final String apiUrl = "https://api.cloudflare.com/client/v4/accounts/{account_id}/images/v1";
     private final String apiToken = "Bearer ";
-
     private final RestTemplate restTemplate;
 
     public CloudflareApiServiceImpl(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
-    public CloudflareApiResponse uploadImage(MultipartFile imageFile) throws IOException {
+    @Override
+    public CloudflareApiResponse uploadImage(MultipartFile imageFile, User user) throws IOException  {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
         headers.set("Authorization", apiToken + cloudflareApiKey);
@@ -48,8 +50,7 @@ public class CloudflareApiServiceImpl implements CloudflareApiService {
         body.add("file", new ByteArrayResource(imageFile.getBytes()) {
             @Override
             public String getFilename() {
-                // TODO: Use user ID when UUID's is implemented
-                return UUID.randomUUID().toString();
+                return user.getId().toString();
             }
         });
         body.add("requireSignedURLs", false);
