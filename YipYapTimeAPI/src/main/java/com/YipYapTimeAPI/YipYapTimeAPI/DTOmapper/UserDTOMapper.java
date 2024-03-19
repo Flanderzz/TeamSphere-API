@@ -8,12 +8,15 @@ import java.util.Set;
 
 public class UserDTOMapper {
 
+//    private ModelMapper modelMapper;
+
     public static UserDTO toUserDTO(User user) {
 
         UserDTO userDto = UserDTO.builder()
                 .email(user.getEmail())
                 .username(user.getUsername())
                 .id(user.getId())
+                .phone(user.getPhone())
                 .profile_picture(user.getProfile_image())
                 .build();
 

@@ -1,20 +1,11 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.DTO;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import java.util.UUID;
 
 
-@Setter
-@Getter
-@AllArgsConstructor
-@NoArgsConstructor
-@ToString
+@Data
 @Builder
 public class UserDTO {
     private UUID id;
@@ -22,6 +13,8 @@ public class UserDTO {
     private String username;
 
     private String email;
+
+    private String phone;
 
     private String profile_picture;
 }

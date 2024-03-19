@@ -8,11 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Setter
-@Getter
-@AllArgsConstructor
-@NoArgsConstructor
-@ToString
+@Data
 @Builder
 public class ChatDTO {
     private Integer id;
@@ -21,11 +17,11 @@ public class ChatDTO {
 
     private Boolean is_group;
 
-    private Set<UserDTO> admins= new HashSet<>();
+    private Set<UserDTO> admins;
 
     private UserDTO created_by;
 
-    private Set<UserDTO> users = new HashSet<>();
+    private Set<UserDTO> users;
 
-    private List<MessageDTO> messages=new ArrayList<>();
+    private List<MessageDTO> messages;
 }

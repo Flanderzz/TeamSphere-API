@@ -1,10 +1,8 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,9 +28,15 @@ public class User {
 
     private String username;
 
+
     private String password;
 
+    @Email
+    @Column(unique = true)
     private String email;
+
+    @Column(unique = true)
+    private String Phone;
 
     private String profile_image;
 

@@ -4,11 +4,7 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Setter
-@Getter
-@AllArgsConstructor
-@NoArgsConstructor
-@ToString
+@Data
 @Builder
 public class MessageDTO {
     private String content;
