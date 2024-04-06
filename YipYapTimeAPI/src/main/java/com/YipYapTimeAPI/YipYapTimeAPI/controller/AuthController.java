@@ -88,7 +88,7 @@ public class AuthController {
 
             AuthResponse authResponse = new AuthResponse(token, true);
 
-            CloudflareApiResponse responseEntity = cloudflareApiService.uploadImage(file);
+            CloudflareApiResponse responseEntity = cloudflareApiService.uploadImage(file, user);
 
             String baseUrl = Objects.requireNonNull(responseEntity.getResult().getVariants().get(0));
             String profile_url = baseUrl.substring(0, baseUrl.lastIndexOf("/") + 1) + "chatProfilePicture";
