@@ -1,5 +1,6 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.models;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Entity;
@@ -28,8 +29,8 @@ import java.util.*;
 @Builder
 public class Chat {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
     private String chat_name;
     private String chat_image;
 

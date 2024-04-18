@@ -62,7 +62,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public Chat findChatById(Integer chatId) throws ChatException {
+    public Chat findChatById(UUID chatId) throws ChatException {
         try {
             log.info("Attempting to find chat by ID: {}", chatId);
 
@@ -100,7 +100,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public Chat deleteChat(Integer chatId, UUID userId) throws ChatException, UserException {
+    public Chat deleteChat(UUID chatId, UUID userId) throws ChatException, UserException {
         try {
             log.info("Deleting chat with ID: {} by user with ID: {}", chatId, userId);
 
@@ -169,7 +169,7 @@ public class ChatServiceImpl implements ChatService {
 
 
     @Override
-    public Chat addUserToGroup(UUID userId, Integer chatId) throws UserException, ChatException {
+    public Chat addUserToGroup(UUID userId, UUID chatId) throws UserException, ChatException {
         try {
             log.info("Adding user with ID {} to group chat with ID: {}", userId, chatId);
 
@@ -190,7 +190,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public Chat renameGroup(Integer chatId, String groupName, UUID reqUserId) throws ChatException, UserException {
+    public Chat renameGroup(UUID chatId, String groupName, UUID reqUserId) throws ChatException, UserException {
         try {
             log.info("Renaming group chat with ID: {} to: {} by user with ID: {}", chatId, groupName, reqUserId);
 
@@ -212,7 +212,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public Chat removeFromGroup(Integer chatId, UUID userId, UUID reqUserId) throws UserException, ChatException {
+    public Chat removeFromGroup(UUID chatId, UUID userId, UUID reqUserId) throws UserException, ChatException {
         try {
             log.info("Removing user with ID {} from group chat with ID: {} by user with ID: {}", userId, chatId, reqUserId);
 

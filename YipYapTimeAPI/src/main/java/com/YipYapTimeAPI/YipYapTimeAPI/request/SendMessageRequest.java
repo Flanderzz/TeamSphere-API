@@ -12,7 +12,7 @@ import java.util.UUID;
 @Getter
 @Setter
 public class SendMessageRequest {
-    private Integer chatId;
+    private UUID chatId;
     private UUID userId;
     private String content;
 }

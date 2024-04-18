@@ -14,18 +14,18 @@ public interface ChatService{
 
     Chat createChat(UUID reqUserId, UUID userId2, boolean isGroup) throws UserException;
 
-    Chat findChatById(Integer chatId) throws ChatException;
+    Chat findChatById(UUID chatId) throws ChatException;
 
     List<Chat> findAllChatByUserId(UUID userId) throws UserException;
 
     Chat createGroup(GroupChatRequest req, UUID reqUerId) throws UserException;
 
-    Chat addUserToGroup(UUID userId, Integer chatId) throws UserException, ChatException;
+    Chat addUserToGroup(UUID userId, UUID chatId) throws UserException, ChatException;
 
-    Chat renameGroup(Integer chatId, String groupName, UUID reqUserId) throws ChatException, UserException;
+    Chat renameGroup(UUID chatId, String groupName, UUID reqUserId) throws ChatException, UserException;
 
-    Chat removeFromGroup(Integer chatId, UUID userId, UUID reqUser) throws UserException,ChatException;
+    Chat removeFromGroup(UUID chatId, UUID userId, UUID reqUser) throws UserException,ChatException;
 
-    Chat deleteChat(Integer chatId, UUID userId) throws ChatException, UserException;
+    Chat deleteChat(UUID chatId, UUID userId) throws ChatException, UserException;
 
 }
