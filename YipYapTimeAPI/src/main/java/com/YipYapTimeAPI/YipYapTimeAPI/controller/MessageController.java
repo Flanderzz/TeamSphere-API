@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/message")
@@ -62,7 +63,7 @@ public class MessageController {
     }
 
     @GetMapping("/chat/{chatId}")
-    public ResponseEntity<List<MessageDTO>> getChatsMessageHandler(@PathVariable Integer chatId) throws ChatException {
+    public ResponseEntity<List<MessageDTO>> getChatsMessageHandler(@PathVariable UUID chatId) throws ChatException {
         try {
             log.info("Processing get messages for chat with ID: {}", chatId);
 
@@ -80,7 +81,7 @@ public class MessageController {
     }
 
     @DeleteMapping("/{messageId}")
-    public ResponseEntity<ApiResponse> deleteMessageHandler(@PathVariable Long messageId) throws MessageException {
+    public ResponseEntity<ApiResponse> deleteMessageHandler(@PathVariable UUID messageId) throws MessageException {
         try {
             log.info("Processing delete message request for message with ID: {}", messageId);
 

@@ -3,6 +3,7 @@ package com.YipYapTimeAPI.YipYapTimeAPI.DTO;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Setter
 @Getter
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
 public class MessageDTO {
     private String content;
 
-    private Long id;
+    private UUID id;
 
     private LocalDateTime timeStamp;
 

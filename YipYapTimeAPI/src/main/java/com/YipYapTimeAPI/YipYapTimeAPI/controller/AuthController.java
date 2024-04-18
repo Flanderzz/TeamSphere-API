@@ -74,11 +74,9 @@ public class AuthController {
 
             // Check if user with the given email already exists
             if (isEmailExist.isPresent()) {
-                log.warn("Email {} is already used with another account", email);
+                log.warn("Email={} is already used with another account", email);
                 throw new UserException("Email is already used with another account");
             }
-
-            log.info("User with email {} successfully created", email);
 
             // Authenticate user and generate JWT token
             Authentication authentication = new UsernamePasswordAuthenticationToken(email, password);

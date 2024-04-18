@@ -66,7 +66,7 @@ public class ChatController {
     }
 
     @GetMapping("/{chatId}")
-    public ResponseEntity<ChatDTO> findChatByIdHandler(@PathVariable Integer chatId) throws ChatException {
+    public ResponseEntity<ChatDTO> findChatByIdHandler(@PathVariable UUID chatId) throws ChatException {
 
         Chat chat = chatService.findChatById(chatId);
 
@@ -89,7 +89,8 @@ public class ChatController {
     }
 
     @PutMapping("/{chatId}/add/{userId}")
-    public ResponseEntity<ChatDTO> addUserToGroupHandler(@PathVariable Integer chatId,@PathVariable UUID userId) throws UserException, ChatException{
+    public ResponseEntity<ChatDTO> addUserToGroupHandler(@PathVariable UUID chatId,@PathVariable UUID userId) throws UserException, ChatException{
+
 
         Chat chat = chatService.addUserToGroup(userId, chatId);
 
@@ -99,7 +100,7 @@ public class ChatController {
     }
 
     @PutMapping("/{chatId}/rename")
-    public ResponseEntity<ChatDTO> renameGroupHandler(@PathVariable Integer chatId, @RequestBody RenameGroupChatRequest renameGoupRequest, @RequestHeader("Autorization") String jwt) throws ChatException, UserException{
+    public ResponseEntity<ChatDTO> renameGroupHandler(@PathVariable UUID chatId, @RequestBody RenameGroupChatRequest renameGoupRequest, @RequestHeader("Autorization") String jwt) throws ChatException, UserException{
 
         User reqUser = userService.findUserProfile(jwt);
 
@@ -111,7 +112,8 @@ public class ChatController {
     }
 
     @PutMapping("/{chatId}/remove/{userId}")
-    public ResponseEntity<ChatDTO> removeFromGroupHandler(@RequestHeader("Authorization") String jwt, @PathVariable Integer chatId,@PathVariable UUID userId) throws UserException, ChatException{
+    public ResponseEntity<ChatDTO> removeFromGroupHandler(@RequestHeader("Authorization") String jwt, @PathVariable UUID chatId,@PathVariable UUID userId) throws UserException, ChatException{
+
 
         User reqUser=userService.findUserProfile(jwt);
 
@@ -123,7 +125,7 @@ public class ChatController {
     }
 
     @DeleteMapping("/delete/{chatId}/{userId}")
-    public ResponseEntity<ChatDTO> deleteChatHandler(@PathVariable Integer chatId, @PathVariable UUID userId) throws ChatException, UserException{
+    public ResponseEntity<ChatDTO> deleteChatHandler(@PathVariable UUID chatId, @PathVariable UUID userId) throws ChatException, UserException{
 
         Chat chat = chatService.deleteChat(chatId, userId);
         ChatDTO chatDto = ChatDTOMapper.toChatDto(chat);

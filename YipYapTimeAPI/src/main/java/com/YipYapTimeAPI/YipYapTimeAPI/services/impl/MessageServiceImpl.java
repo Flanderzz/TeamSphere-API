@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -66,7 +67,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public void deleteMessage(Long messageId) throws MessageException {
+    public void deleteMessage(UUID messageId) throws MessageException {
         log.info("Attempting to delete message with ID: {}", messageId);
 
         try {
@@ -86,7 +87,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public List<Messages> getChatsMessages(Integer chatId) throws ChatException {
+    public List<Messages> getChatsMessages(UUID chatId) throws ChatException {
         log.info("Attempting to retrieve messages for chat with ID: {}", chatId);
 
         try {
@@ -107,7 +108,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public Messages findMessageById(Long messageId) throws MessageException {
+    public Messages findMessageById(UUID messageId) throws MessageException {
         log.info("Attempting to find message by ID: {}", messageId);
 
         try {

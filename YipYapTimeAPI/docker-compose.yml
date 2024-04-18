@@ -1,0 +1,21 @@
+version: '3'
+services:
+  spring-app:
+    build: .
+    ports:
+      - "5454:5454"
+    depends_on:
+      - mysql
+      - rabbitmq
+  mysql:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: my-secret-pw
+      MYSQL_DATABASE: teamsphere_db
+  rabbitmq:
+    image: rabbitmq:management
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    command: >
+      bash -c "rabbitmq-plugins enable rabbitmq_stomp && rabbitmq-server"

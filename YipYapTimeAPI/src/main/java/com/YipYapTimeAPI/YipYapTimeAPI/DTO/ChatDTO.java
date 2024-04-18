@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @Setter
 @Getter
@@ -15,7 +16,7 @@ import java.util.Set;
 @ToString
 @Builder
 public class ChatDTO {
-    private Integer id;
+    private UUID id;
     private String chat_name;
     private String chat_image;
 

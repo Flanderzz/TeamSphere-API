@@ -1,5 +1,6 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.models;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Entity;
@@ -9,6 +10,7 @@ import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -19,8 +21,8 @@ import java.util.Objects;
 @Builder
 public class Messages {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     private String content;
 
