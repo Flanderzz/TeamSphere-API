@@ -2,8 +2,6 @@ version: '3'
 services:
   spring-app:
     build: .
-    ports:
-      - "5454:5454"
     depends_on:
       - mysql
       - rabbitmq
@@ -19,3 +17,11 @@ services:
       RABBITMQ_DEFAULT_PASS: guest
     command: >
       bash -c "rabbitmq-plugins enable rabbitmq_stomp && rabbitmq-server"
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - spring-app
