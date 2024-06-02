@@ -13,7 +13,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface ChatRepository extends JpaRepository<Chat, Integer> {
+public interface ChatRepository extends JpaRepository<Chat, UUID> {
 
     @Query("select c from Chat c join c.users u where u.id=:userId")
     List<Chat> findChatByUserId(UUID userId);

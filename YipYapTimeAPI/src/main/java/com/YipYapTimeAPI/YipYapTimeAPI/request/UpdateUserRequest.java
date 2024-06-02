@@ -1,7 +1,5 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.request;
 
-//TODO: add lombok annotations
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
