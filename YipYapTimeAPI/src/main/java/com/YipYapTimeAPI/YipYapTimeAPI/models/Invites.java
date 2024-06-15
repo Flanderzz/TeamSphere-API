@@ -39,5 +39,6 @@ public class Invites {
     private Status status;
 
     @OneToMany
-    private Set<Invitee> invitees = new HashSet<>();
+    @ToString.Exclude
+    private Set<Invitee> invitees = new HashSet<>(100);
 }

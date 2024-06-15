@@ -5,4 +5,5 @@ public enum Status {
     SENT,
     ACCEPTED,
     EXPIRED,
+    STOPPED
 }

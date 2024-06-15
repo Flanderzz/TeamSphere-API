@@ -1,13 +1,14 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.services;
 
 import com.YipYapTimeAPI.YipYapTimeAPI.exception.InviteException;
+import com.YipYapTimeAPI.YipYapTimeAPI.exception.UserException;
+import com.YipYapTimeAPI.YipYapTimeAPI.models.Chat;
 import com.YipYapTimeAPI.YipYapTimeAPI.models.User;
 import com.YipYapTimeAPI.YipYapTimeAPI.models.embeddables.Invitee;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 @Service
 public interface InviteService {
@@ -15,5 +16,9 @@ public interface InviteService {
 
     String getInviteID(User user);
 
-    List<User> getUsersInvited(User user);
+    Chat connectUsers(User invitee, String ID) throws InviteException, UserException;
+
+    void pauseInvites(User user) throws InviteException;
+
+    Set<Invitee> getUsersInvited(User user) throws InviteException;
 }

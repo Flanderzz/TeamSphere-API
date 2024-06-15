@@ -15,9 +15,10 @@ import java.util.UUID;
 @Repository
 public interface InviteRepository extends JpaRepository<Invites, UUID>{
     @Query("SELECT i FROM Invites i WHERE i.inviter.id = :userId")
-    Optional<Invites> findInvitesByUserId(@Param("userId") UUID userId);
+    Optional<Invites> findInvitesByUserId(@Param("userId") String userId);
 
-
+    @Query("SELECT i FROM Invites i WHERE i.inviteID = :InviteID")
+    Optional<Invites> findInvitesByInvite_ID(@Param("InviteID") String InviteID);
 
     @Query("SELECT i.invitees FROM Invites i WHERE i.inviter = :inviter")
     List<Invitee> findInviteesByInviter(@Param("inviter") User inviter);
