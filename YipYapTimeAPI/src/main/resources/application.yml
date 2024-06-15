@@ -1,0 +1,31 @@
+_logging_pattern: "%d{yyyy-MM-dd HH:mm:ss.SSS} ${LOG_LEVEL_PATTERN:%5level} log_level=\"%level\" ${PID:- } --- [thread=\"%thread\", httpMethod=\"%X{httpMethod:-null}\", httpRequestURI=\"%X{httpRequestURI:-null}\", X-Request-ID=\"%X{requestId:-null}\"] [%15.15t] %-40.40logger{39} : %replace(%msg){'\r\n|\n', '\u2028'} %replace(%Exception){'\r\n|\n', '\u2028'}%nopex"
+_logging_pattern_console: "${_logging_pattern}%n"
+logging:
+  pattern:
+    console: ${_logging_pattern_console}
+spring:
+  datasource:
+    driver-class-name: ''
+    password: ''
+    url: ''
+    username: ''
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  profiles:
+    active: local
+  rabbitmq:
+    cache:
+      channel:
+        size: ''
+    host: ''
+    password: ''
+    port: ''
+    requested-heartbeat: ''
+    username: ''
+    virtual-host: ''
+twilio:
+  accountSid: ''
+  authToken: ''
+  phoneNumber: ''

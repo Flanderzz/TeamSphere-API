@@ -1,0 +1,23 @@
+cloudflare:
+  api:
+    accountID: ''
+    key: ''
+server:
+  port: 5454
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    password: my-secret-pw
+    url: jdbc:mysql://mysql:3306/teamsphere_db
+    username: root
+  jpa:
+    database: mysql
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  rabbitmq:
+    host: rabbitmq
+    password: guest
+    port: 61613
+    requested-heartbeat: 580
+    username: guest
