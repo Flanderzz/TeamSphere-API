@@ -32,28 +32,28 @@ import java.util.UUID;
 @Slf4j
 public class MessageController {
 
-    private UserService userService;
-    private MessageService messageService;
+    private final UserService userService;
+    private final MessageService messageService;
     public MessageController(UserService userService, MessageService messageService) {
         this.userService = userService;
         this.messageService = messageService;
     }
 
     @PostMapping("/create")
-    public ResponseEntity<MessageDTO> sendMessageHandler(@RequestHeader("Authorization")String jwt, @RequestBody SendMessageRequest req) throws ChatException, UserException {
+    public ResponseEntity<MessageDTO> sendMessageHandler(@RequestHeader("Authorization")String jwt, @RequestBody SendMessageRequest req) throws ChatException {
 
         try {
-            log.info("Processing send message request for user with JWT: {}", jwt);
+            log.info("Processing send message request to userId: {}", req.getUserId());
 
             User reqUser = userService.findUserProfile(jwt);
-
+            //we are set a new userId and ignoring the one in the request
             req.setUserId(reqUser.getId());
 
             Messages messages = messageService.sendMessage(req);
 
             MessageDTO messageDto = MessageDTOMapper.toMessageDto(messages);
 
-            log.info("Message sent successfully by user with JWT: {}", jwt);
+            log.info("Message sent successfully by userId: {}", reqUser.getId());
 
             return new ResponseEntity<>(messageDto, HttpStatus.OK);
         } catch (Exception e) {

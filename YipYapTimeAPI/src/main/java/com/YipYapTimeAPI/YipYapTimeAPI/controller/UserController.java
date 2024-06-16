@@ -7,17 +7,16 @@ import com.YipYapTimeAPI.YipYapTimeAPI.models.User;
 import com.YipYapTimeAPI.YipYapTimeAPI.request.UpdateUserRequest;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.UserService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashSet;
 import java.util.List;
@@ -27,7 +26,7 @@ import java.util.UUID;
 @RequestMapping("/api/user")
 @Slf4j
 public class UserController {
-    private UserService userService;
+    private final UserService userService;
 
     public UserController(UserService userService) {
         this.userService = userService;
@@ -53,13 +52,13 @@ public class UserController {
     @GetMapping("/profile")
     public ResponseEntity<UserDTO> getUserProfileHandler(@RequestHeader("Authorization") String jwt) {
         try {
-            log.info("Processing get user profile request for user with JWT: {}", jwt);
+            log.info("Processing get user profile request");
 
             User user = userService.findUserProfile(jwt);
 
             UserDTO userDTO = UserDTOMapper.toUserDTO(user);
 
-            log.info("User profile retrieved successfully for user with JWT: {}", jwt);
+            log.info("User profile retrieved successfully");
 
             return new ResponseEntity<>(userDTO, HttpStatus.ACCEPTED);
         } catch (Exception e) {
@@ -73,7 +72,7 @@ public class UserController {
     @GetMapping("/search")
     public ResponseEntity<HashSet<UserDTO>> searchUsersByName(@RequestParam("name") String name) {
         try {
-            log.info("Processing search users by name request for name: {}", name);
+            log.info("Processing search users by name={}", name);
 
             List<User> users = userService.searchUser(name);
 
@@ -81,11 +80,11 @@ public class UserController {
 
             HashSet<UserDTO> userDtos = UserDTOMapper.toUserDtos(set);
 
-            log.info("Users search completed successfully for name: {}", name);
+            log.info("Users search completed successfully for name={}", name);
 
             return new ResponseEntity<>(userDtos, HttpStatus.ACCEPTED);
         } catch (Exception e) {
-            log.error("Error during search users process for name: {}", name, e);
+            log.error("Error during search users process", e);
             // We might want to handle this exception differently.
             // Here, I'm letting it propagate to the client as a 500 Internal Server Error.
             throw new RuntimeException("Error during search users process", e);

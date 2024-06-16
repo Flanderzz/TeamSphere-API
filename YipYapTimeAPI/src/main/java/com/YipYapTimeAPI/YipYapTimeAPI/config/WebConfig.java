@@ -1,22 +1,21 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.config;
 
-import com.YipYapTimeAPI.YipYapTimeAPI.Interceptors.LoggingInterceptor;
+import com.YipYapTimeAPI.YipYapTimeAPI.filters.LoggingFilter;
+import org.springframework.boot.autoconfigure.security.SecurityProperties;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 
 @Configuration
-public class WebConfig implements WebMvcConfigurer {
-
-    private final LoggingInterceptor loggingInterceptor;
-
-    public WebConfig(LoggingInterceptor loggingInterceptor) {
-        this.loggingInterceptor = loggingInterceptor;
-    }
-
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(loggingInterceptor);
+public class WebConfig {
+    @Bean
+    public FilterRegistrationBean<LoggingFilter> loggingFilterRegistration() {
+        FilterRegistrationBean<LoggingFilter> registrationBean = new FilterRegistrationBean<>();
+        registrationBean.setFilter(new LoggingFilter());
+        registrationBean.addUrlPatterns("/*"); // Apply filter to all URLs
+        registrationBean.setName("LoggingFilter");
+        registrationBean.setOrder(SecurityProperties.DEFAULT_FILTER_ORDER - 1); // Set order if multiple filters
+        return registrationBean;
     }
 }
