@@ -12,9 +12,10 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: my-secret-pw
       MYSQL_DATABASE: teamsphere_db
-    restart: unless-stopped
+    ports:
+      - "3306:3306"
     volumes:
-      - mysql-data:/var/lib/mysql
+      - mysql_data:/var/lib/mysql
   rabbitmq:
     image: rabbitmq:management
     environment:
@@ -22,19 +23,12 @@ services:
       RABBITMQ_DEFAULT_PASS: guest
     command: >
       bash -c "rabbitmq-plugins enable rabbitmq_stomp && rabbitmq-server"
-  nginx:
-    image: nginx:latest
     ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-      - ./certbot:/etc/letsencrypt
-    depends_on:
-      - spring-app
+      - "61613:61613"
+      - "15672:15672"
   loki:
     container_name: loki
-    image: grafana/loki:2.3.0
+    image: grafana/loki:2.9.3
     restart: unless-stopped
     ports:
       - "3100:3100"
@@ -52,9 +46,14 @@ services:
       - ./grafana/data:/var/lib/grafana
   promtail:
     container_name: promtail
-    image: grafana/promtail:2.3.0
+    image: grafana/promtail:2.9.3
     restart: unless-stopped
     volumes:
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - ./promtail/config/promtail-config.yaml:/etc/promtail/promtail-config.yaml
+      - /var/run/docker.sock:/var/run/docker.sock
     command: -config.file=/etc/promtail/promtail-config.yaml
+    depends_on:
+      - loki
+volumes:
+  mysql_data:

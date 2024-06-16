@@ -16,8 +16,12 @@ spring:
       ddl-auto: update
     show-sql: true
   rabbitmq:
-    host: rabbitmq
+    host: localhost
     password: guest
     port: 61613
     requested-heartbeat: 580
     username: guest
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
