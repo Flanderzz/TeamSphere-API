@@ -8,7 +8,6 @@ import com.YipYapTimeAPI.YipYapTimeAPI.request.UpdateUserRequest;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
