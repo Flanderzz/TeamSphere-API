@@ -12,6 +12,9 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: my-secret-pw
       MYSQL_DATABASE: teamsphere_db
+    restart: unless-stopped
+    volumes:
+      - mysql-data:/var/lib/mysql
   rabbitmq:
     image: rabbitmq:management
     environment:
@@ -29,3 +32,29 @@ services:
       - ./certbot:/etc/letsencrypt
     depends_on:
       - spring-app
+  loki:
+    container_name: loki
+    image: grafana/loki:2.3.0
+    restart: unless-stopped
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki/config/loki-config.yaml:/etc/loki/loki-config.yaml
+      - ./loki/data:/data/loki
+    command: -config.file=/etc/loki/loki-config.yaml
+  grafana:
+    image: grafana/grafana:latest
+    restart: unless-stopped
+    user: "0"
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/data:/var/lib/grafana
+  promtail:
+    container_name: promtail
+    image: grafana/promtail:2.3.0
+    restart: unless-stopped
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - ./promtail/config/promtail-config.yaml:/etc/promtail/promtail-config.yaml
+    command: -config.file=/etc/promtail/promtail-config.yaml
