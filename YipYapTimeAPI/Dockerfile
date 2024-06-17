@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17-jdk-alpine as build
+FROM arm64v8/eclipse-temurin:17 as build
 
 LABEL authors="bravin"
 
@@ -12,7 +12,7 @@ COPY src src
 RUN ./mvnw install -DskipTests
 RUN mkdir -p target/dependency && (cd target/dependency; jar -xf ../*.jar)
 
-FROM eclipse-temurin:17-jdk-alpine
+FROM arm64v8/eclipse-temurin:17
 
 VOLUME /tmp
 ARG DEPENDENCY=/workspace/app/target/dependency

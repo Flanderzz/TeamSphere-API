@@ -30,7 +30,7 @@ public class JWTTokenValidator extends OncePerRequestFilter {
         
         String jwt =request.getHeader(JWTTokenConst.HEADER);
 
-        log.info("validator jwt -------- "+jwt);
+        log.info("Validating the jwt");
 
         if(jwt != null) {
             try {
