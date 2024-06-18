@@ -1,12 +1,5 @@
 version: '3'
 services:
-  spring-app:
-    build: .
-    expose:
-      - "5454"
-    depends_on:
-      - mysql
-      - rabbitmq
   mysql:
     image: mysql:latest
     environment:
@@ -44,6 +37,7 @@ services:
       - "3000:3000"
     volumes:
       - ./grafana/data:/var/lib/grafana
+      - ./grafana/config/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
   promtail:
     container_name: promtail
     image: grafana/promtail:2.9.3
