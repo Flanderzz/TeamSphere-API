@@ -13,7 +13,7 @@ import java.util.UUID;
 @Repository
 public interface MessageRepository  extends JpaRepository<Messages, UUID> {
 
-    @Query("select m from Messages m join m.chat c where c.id=:chatId")
+    @Query("select m from Messages m join m.chat c where c.id=:chatId order by m.timeStamp asc")
     List<Messages> findMessageByChatId(@Param("chatId") UUID chatId);
 
     Optional<Messages> findById(UUID userId);

@@ -50,7 +50,7 @@ public class RealTimeMsgController {
     @MessageMapping("/chat/{groupId}")
     public Messages sendToUser(@Payload SendMessageRequest req, @Header("Authorization") String jwt, @DestinationVariable String groupId) throws ChatException, UserException {
         try {
-            log.info("Processing send message request for user with JWT: {} to group: {}", jwt, groupId);
+            log.info("Processing send message request for userId= {} to group: {}", req.getUserId(), groupId);
 
             User user = userService.findUserProfile(jwt);
             req.setUserId(user.getId());
@@ -63,7 +63,7 @@ public class RealTimeMsgController {
 
             simpMessagingTemplate.convertAndSendToUser(groupId, "/private", createdMessages);
 
-            log.info("Message sent successfully to group: {} by user with JWT: {}", groupId, jwt);
+            log.info("Message sent successfully to group: {} by userId: {}", groupId, req.getUserId());
 
             return createdMessages;
         } catch (Exception e) {

@@ -8,7 +8,6 @@ import com.YipYapTimeAPI.YipYapTimeAPI.request.UpdateUserRequest;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -19,14 +18,12 @@ import java.util.UUID;
 @Service
 @Slf4j
 public class UserServiceImpl implements UserService {
-    private PasswordEncoder passwordEncoder;
 
-    private UserRepository userRepo;
+    private final UserRepository userRepo;
 
-    private JWTTokenProvider jwtTokenProvider;
+    private final JWTTokenProvider jwtTokenProvider;
 
-    public UserServiceImpl(PasswordEncoder passwordEncoder, UserRepository userRepo, JWTTokenProvider jwtTokenProvider) {
-        this.passwordEncoder = passwordEncoder;
+    public UserServiceImpl( UserRepository userRepo, JWTTokenProvider jwtTokenProvider) {
         this.userRepo = userRepo;
         this.jwtTokenProvider = jwtTokenProvider;
     }
@@ -81,12 +78,10 @@ public class UserServiceImpl implements UserService {
 
         String email = jwtTokenProvider.getEmailFromToken(jwt);
 
-        log.info("Extracted email from JWT: {}", email);
-
         Optional<User> opt = userRepo.findByEmail(email);
 
         if (opt.isPresent()) {
-            log.info("Found user profile for email {}: {}", email, opt.get());
+            log.info("Found user profile for userId: {}", opt.get().getId());
             return opt.get();
         }
 

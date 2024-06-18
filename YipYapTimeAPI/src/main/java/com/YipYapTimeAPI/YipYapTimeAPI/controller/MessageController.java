@@ -4,7 +4,6 @@ import com.YipYapTimeAPI.YipYapTimeAPI.DTO.MessageDTO;
 import com.YipYapTimeAPI.YipYapTimeAPI.DTOmapper.MessageDTOMapper;
 import com.YipYapTimeAPI.YipYapTimeAPI.exception.ChatException;
 import com.YipYapTimeAPI.YipYapTimeAPI.exception.MessageException;
-import com.YipYapTimeAPI.YipYapTimeAPI.exception.UserException;
 import com.YipYapTimeAPI.YipYapTimeAPI.models.Messages;
 import com.YipYapTimeAPI.YipYapTimeAPI.models.User;
 import com.YipYapTimeAPI.YipYapTimeAPI.request.SendMessageRequest;
@@ -14,15 +13,14 @@ import com.YipYapTimeAPI.YipYapTimeAPI.services.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.DeleteMapping;
-
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.UUID;
@@ -32,28 +30,28 @@ import java.util.UUID;
 @Slf4j
 public class MessageController {
 
-    private UserService userService;
-    private MessageService messageService;
+    private final UserService userService;
+    private final MessageService messageService;
     public MessageController(UserService userService, MessageService messageService) {
         this.userService = userService;
         this.messageService = messageService;
     }
 
     @PostMapping("/create")
-    public ResponseEntity<MessageDTO> sendMessageHandler(@RequestHeader("Authorization")String jwt, @RequestBody SendMessageRequest req) throws ChatException, UserException {
+    public ResponseEntity<MessageDTO> sendMessageHandler(@RequestHeader("Authorization")String jwt, @RequestBody SendMessageRequest req) throws ChatException {
 
         try {
-            log.info("Processing send message request for user with JWT: {}", jwt);
+            log.info("Processing send message request to userId: {}", req.getUserId());
 
             User reqUser = userService.findUserProfile(jwt);
-
+            //we are set a new userId and ignoring the one in the request
             req.setUserId(reqUser.getId());
 
             Messages messages = messageService.sendMessage(req);
 
             MessageDTO messageDto = MessageDTOMapper.toMessageDto(messages);
 
-            log.info("Message sent successfully by user with JWT: {}", jwt);
+            log.info("Message sent successfully by userId: {}", reqUser.getId());
 
             return new ResponseEntity<>(messageDto, HttpStatus.OK);
         } catch (Exception e) {
