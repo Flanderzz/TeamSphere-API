@@ -3,8 +3,10 @@ package com.YipYapTimeAPI.YipYapTimeAPI.controller;
 import com.YipYapTimeAPI.YipYapTimeAPI.exception.InviteException;
 import com.YipYapTimeAPI.YipYapTimeAPI.models.Invites;
 import com.YipYapTimeAPI.YipYapTimeAPI.models.User;
+import com.YipYapTimeAPI.YipYapTimeAPI.models.embeddables.Invitee;
 import com.YipYapTimeAPI.YipYapTimeAPI.repository.InviteRepository;
 import com.YipYapTimeAPI.YipYapTimeAPI.response.ApiResponse;
+import com.YipYapTimeAPI.YipYapTimeAPI.response.InviteResponse;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.EmailService;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.InviteService;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.UserService;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/invite")
@@ -62,10 +65,10 @@ public class InviteController {
     }
 
     @GetMapping("/getID")
-    public ResponseEntity<ApiResponse> getID(@RequestHeader("Authorization") String jwt) {
+    public ResponseEntity<InviteResponse<Set<Invitee>>> getID(@RequestHeader("Authorization") String jwt) throws InviteException {
         User user = userService.findUserProfile(jwt);
-        String invites = inviteService.getInviteID(user);
-        ApiResponse res = new ApiResponse("Invites Found!", true);
+        Set<Invitee> invites = inviteService.getUsersInvited(user);
+        InviteResponse<Set<Invitee>> res = new InviteResponse<>(invites, true);
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
