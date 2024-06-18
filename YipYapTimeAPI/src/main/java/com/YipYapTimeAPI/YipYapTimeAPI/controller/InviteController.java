@@ -68,7 +68,7 @@ public class InviteController {
     public ResponseEntity<InviteResponse<Set<Invitee>>> getID(@RequestHeader("Authorization") String jwt) throws InviteException {
         User user = userService.findUserProfile(jwt);
         Set<Invitee> invites = inviteService.getUsersInvited(user);
-        InviteResponse<Set<Invitee>> res = new InviteResponse<>(invites, true);
+        var res = new InviteResponse<>(invites, true);
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
