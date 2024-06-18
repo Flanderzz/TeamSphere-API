@@ -4,6 +4,7 @@ package com.YipYapTimeAPI.YipYapTimeAPI.config;
 import java.util.Arrays;
 import java.util.Collections;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -21,6 +22,11 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 
 @Configuration
 public class AppConfiguration {
+    private final AppProperties appProperties;
+
+    public AppConfiguration(AppProperties appProperties) {
+        this.appProperties = appProperties;
+    }
 
     @Bean
     public SecurityFilterChain securityAppConfig(HttpSecurity http) throws Exception {
@@ -37,7 +43,7 @@ public class AppConfiguration {
 
                         CorsConfiguration cfg = new CorsConfiguration();
 
-                        cfg.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:3000/register"));
+                        cfg.setAllowedOrigins(appProperties.getAllowedOrigins());
                         cfg.setAllowedMethods(Collections.singletonList("*"));
                         cfg.setAllowCredentials(true);
                         cfg.setAllowedHeaders(Collections.singletonList("*"));
