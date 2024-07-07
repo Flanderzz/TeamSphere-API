@@ -1,26 +1,18 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.DTO;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Setter
-@Getter
-@AllArgsConstructor
-@NoArgsConstructor
-@ToString
+@Data
 @Builder
 public class MessageDTO {
-    private String content;
-
     private UUID id;
-
+    private String content;
     private LocalDateTime timeStamp;
-
-    private Boolean is_read;
-
-    private UserDTO user;
-
-    private ChatDTO chat;
+    private Boolean isRead;
+    private UUID userId;
+    private UUID chatId;
 }

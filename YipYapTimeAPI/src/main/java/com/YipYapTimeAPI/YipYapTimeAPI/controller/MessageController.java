@@ -29,12 +29,13 @@ import java.util.UUID;
 @RequestMapping("/api/message")
 @Slf4j
 public class MessageController {
-
+    private final MessageDTOMapper messageDTOMapper;
     private final UserService userService;
     private final MessageService messageService;
-    public MessageController(UserService userService, MessageService messageService) {
+    public MessageController(UserService userService, MessageService messageService, MessageDTOMapper messageDTOMapper) {
         this.userService = userService;
         this.messageService = messageService;
+        this.messageDTOMapper = messageDTOMapper;
     }
 
     @PostMapping("/create")
@@ -49,7 +50,7 @@ public class MessageController {
 
             Messages messages = messageService.sendMessage(req);
 
-            MessageDTO messageDto = MessageDTOMapper.toMessageDto(messages);
+            MessageDTO messageDto = messageDTOMapper.toMessageDto(messages);
 
             log.info("Message sent successfully by userId: {}", reqUser.getId());
 
@@ -67,7 +68,7 @@ public class MessageController {
 
             List<Messages> messages = messageService.getChatsMessages(chatId);
 
-            List<MessageDTO> messageDtos = MessageDTOMapper.toMessageDtos(messages);
+            List<MessageDTO> messageDtos = messageDTOMapper.toMessageDtos(messages);
 
             log.info("Retrieved {} messages for chat with ID: {}", messageDtos.size(), chatId);
 

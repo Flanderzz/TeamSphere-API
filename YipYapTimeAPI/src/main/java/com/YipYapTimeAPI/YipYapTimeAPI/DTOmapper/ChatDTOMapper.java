@@ -1,50 +1,43 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.DTOmapper;
 
 import com.YipYapTimeAPI.YipYapTimeAPI.DTO.ChatDTO;
-import com.YipYapTimeAPI.YipYapTimeAPI.DTO.MessageDTO;
-import com.YipYapTimeAPI.YipYapTimeAPI.DTO.UserDTO;
 import com.YipYapTimeAPI.YipYapTimeAPI.models.Chat;
+import com.YipYapTimeAPI.YipYapTimeAPI.models.Messages;
+import com.YipYapTimeAPI.YipYapTimeAPI.models.User;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Mappings;
+import org.mapstruct.Named;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
-public class ChatDTOMapper {
+@Mapper(componentModel = "spring")
+public interface ChatDTOMapper {
+    @Mappings({
+            @Mapping(source = "chatName", target = "chatName"),
+            @Mapping(source = "chatImage", target = "chatImage"),
+            @Mapping(source = "isGroup", target = "isGroup"),
+            @Mapping(source = "admins", target = "admins", qualifiedByName = "usersToUserIds"),
+            @Mapping(source = "createdBy.id", target = "createdBy"),
+            @Mapping(source = "users", target = "users", qualifiedByName = "usersToUserIds"),
+            @Mapping(source = "messages", target = "messages", qualifiedByName = "messagesToMessageIds")
+    })
+    ChatDTO toChatDto(Chat chat);
 
-    public static ChatDTO toChatDto(Chat chat) {
+    List<ChatDTO> toChatDtos(List<Chat> chats);
 
-        UserDTO userDto = UserDTOMapper.toUserDTO(chat.getCreated_by());
+    @Named("usersToUserIds")
 
-        List<MessageDTO> messageDtos = MessageDTOMapper.toMessageDtos(chat.getMessages());
-
-        Set<UserDTO> userDtos = UserDTOMapper.toUserDtos(chat.getUsers());
-
-        Set<UserDTO> admins = UserDTOMapper.toUserDtos(chat.getAdmins());
-
-        ChatDTO chatDto = ChatDTO.builder()
-                .id(chat.getId())
-                .chat_image(chat.getChat_image())
-                .chat_name(chat.getChat_name())
-                .created_by(userDto)
-                .is_group(chat.getIs_group())
-                .messages(messageDtos)
-                .users(userDtos)
-                .admins(admins)
-                .build();
-
-
-        return chatDto;
+    default Set<UUID> usersToUserIds(Set<User> users) {
+        return users.stream().map(User::getId).collect(Collectors.toSet());
     }
 
-    public static List<ChatDTO > toChatDtos(List<Chat> chats){
-
-        List<ChatDTO> chatDtos = new ArrayList<>();
-
-        for(Chat chat:chats) {
-            ChatDTO chatDto = toChatDto(chat);
-            chatDtos.add(chatDto);
-        }
-
-        return chatDtos;
+    @Named("messagesToMessageIds")
+    default List<UUID> messagesToMessageIds(List<Messages> messages) {
+        return messages.stream().map(Messages::getId).collect(Collectors.toList());
     }
+
 }

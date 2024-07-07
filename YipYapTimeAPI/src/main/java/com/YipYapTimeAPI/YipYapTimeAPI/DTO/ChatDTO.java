@@ -1,7 +1,7 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.DTO;
 
-import jakarta.persistence.Column;
-import lombok.*;
+import lombok.Builder;
+import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -9,24 +9,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-@Setter
-@Getter
-@AllArgsConstructor
-@NoArgsConstructor
-@ToString
+@Data
 @Builder
 public class ChatDTO {
     private UUID id;
-    private String chat_name;
-    private String chat_image;
-
-    private Boolean is_group;
-
-    private Set<UserDTO> admins= new HashSet<>();
-
-    private UserDTO created_by;
-
-    private Set<UserDTO> users = new HashSet<>();
-
-    private List<MessageDTO> messages=new ArrayList<>();
+    private String chatName;
+    private String chatImage;
+    private Boolean isGroup;
+    private Set<UUID> admins = new HashSet<>();
+    private UUID createdBy;
+    private Set<UUID> users = new HashSet<>();
+    private List<UUID> messages = new ArrayList<>();
 }

@@ -32,13 +32,16 @@ import java.util.UUID;
 @Slf4j
 public class ChatController {
 
-    private ChatService chatService;
+    private final ChatService chatService;
 
-    private UserService userService;
+    private final UserService userService;
+    
+    private final ChatDTOMapper chatDTOMapper;
 
-    public ChatController(ChatService chatService, UserService userService) {
+    public ChatController(ChatService chatService, UserService userService, ChatDTOMapper chatDTOMapper) {
         this.chatService = chatService;
         this.userService = userService;
+        this.chatDTOMapper = chatDTOMapper;
     }
 
     @PostMapping("/single")
@@ -48,9 +51,8 @@ public class ChatController {
         User reqUser = userService.findUserProfile(jwt);
 
         Chat chat = chatService.createChat(reqUser.getId(),singleChatRequest.getUserId(),false);
-        ChatDTO chatDto = ChatDTOMapper.toChatDto(chat);
-
-        return new ResponseEntity<ChatDTO>(chatDto, HttpStatus.OK);
+        ChatDTO chatDto = chatDTOMapper.toChatDto(chat);
+        return new ResponseEntity<>(chatDto, HttpStatus.OK);
     }
 
     @PostMapping("/group")
@@ -59,9 +61,9 @@ public class ChatController {
         User reqUser = userService.findUserProfile(jwt);
 
         Chat chat = chatService.createGroup(groupChatRequest, reqUser.getId());
-        ChatDTO chatDto = ChatDTOMapper.toChatDto(chat);
+        ChatDTO chatDto = chatDTOMapper.toChatDto(chat);
 
-        return new ResponseEntity<ChatDTO>(chatDto,HttpStatus.OK);
+        return new ResponseEntity<>(chatDto, HttpStatus.OK);
 
     }
 
@@ -70,9 +72,9 @@ public class ChatController {
 
         Chat chat = chatService.findChatById(chatId);
 
-        ChatDTO chatDto = ChatDTOMapper.toChatDto(chat);
+        ChatDTO chatDto = chatDTOMapper.toChatDto(chat);
 
-        return new ResponseEntity<ChatDTO>(chatDto,HttpStatus.OK);
+        return new ResponseEntity<>(chatDto, HttpStatus.OK);
 
     }
 
@@ -83,9 +85,9 @@ public class ChatController {
 
         List<Chat> chats = chatService.findAllChatByUserId(user.getId());
 
-        List<ChatDTO> chatDtos = ChatDTOMapper.toChatDtos(chats);
+        List<ChatDTO> chatDtos = chatDTOMapper.toChatDtos(chats);
 
-        return new ResponseEntity<List<ChatDTO>>(chatDtos,HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(chatDtos, HttpStatus.ACCEPTED);
     }
 
     @PutMapping("/{chatId}/add/{userId}")
@@ -94,21 +96,21 @@ public class ChatController {
 
         Chat chat = chatService.addUserToGroup(userId, chatId);
 
-        ChatDTO chatDto = ChatDTOMapper.toChatDto(chat);
+        ChatDTO chatDto = chatDTOMapper.toChatDto(chat);
 
-        return new ResponseEntity<ChatDTO>(chatDto,HttpStatus.OK);
+        return new ResponseEntity<>(chatDto, HttpStatus.OK);
     }
 
     @PutMapping("/{chatId}/rename")
-    public ResponseEntity<ChatDTO> renameGroupHandler(@PathVariable UUID chatId, @RequestBody RenameGroupChatRequest renameGoupRequest, @RequestHeader("Autorization") String jwt) throws ChatException, UserException{
+    public ResponseEntity<ChatDTO> renameGroupHandler(@PathVariable UUID chatId, @RequestBody RenameGroupChatRequest renameGroupRequest, @RequestHeader("Authorization") String jwt) throws ChatException, UserException{
 
         User reqUser = userService.findUserProfile(jwt);
 
-        Chat chat = chatService.renameGroup(chatId, renameGoupRequest.getGroupName(), reqUser.getId());
+        Chat chat = chatService.renameGroup(chatId, renameGroupRequest.getGroupName(), reqUser.getId());
 
-        ChatDTO chatDto = ChatDTOMapper.toChatDto(chat);
+        ChatDTO chatDto = chatDTOMapper.toChatDto(chat);
 
-        return new ResponseEntity<ChatDTO>(chatDto,HttpStatus.OK);
+        return new ResponseEntity<>(chatDto, HttpStatus.OK);
     }
 
     @PutMapping("/{chatId}/remove/{userId}")
@@ -119,17 +121,17 @@ public class ChatController {
 
         Chat chat = chatService.removeFromGroup(chatId, userId, reqUser.getId());
 
-        ChatDTO chatDto = ChatDTOMapper.toChatDto(chat);
+        ChatDTO chatDto = chatDTOMapper.toChatDto(chat);
 
-        return new ResponseEntity<ChatDTO>(chatDto,HttpStatus.OK);
+        return new ResponseEntity<>(chatDto, HttpStatus.OK);
     }
 
     @DeleteMapping("/delete/{chatId}/{userId}")
     public ResponseEntity<ChatDTO> deleteChatHandler(@PathVariable UUID chatId, @PathVariable UUID userId) throws ChatException, UserException{
 
         Chat chat = chatService.deleteChat(chatId, userId);
-        ChatDTO chatDto = ChatDTOMapper.toChatDto(chat);
+        ChatDTO chatDto = chatDTOMapper.toChatDto(chat);
 
-        return new ResponseEntity<ChatDTO>(chatDto,HttpStatus.OK);
+        return new ResponseEntity<>(chatDto, HttpStatus.OK);
     }
 }

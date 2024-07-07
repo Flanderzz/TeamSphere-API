@@ -36,7 +36,6 @@ import java.util.Optional;
 @RequestMapping("/auth")
 @Slf4j
 public class AuthController {
-
     private UserRepository userRepository;
 
     private PasswordEncoder passwordEncoder;
@@ -91,13 +90,12 @@ public class AuthController {
             String baseUrl = Objects.requireNonNull(responseEntity.getResult().getVariants().get(0));
             String profile_url = baseUrl.substring(0, baseUrl.lastIndexOf("/") + 1) + "chatProfilePicture";
 
-
             // Creating a new user
             User createdUser = User.builder()
                     .email(email)
                     .username(username)
                     .password(passwordEncoder.encode(password))
-                    .profile_image(profile_url)
+                    .profilePicture(profile_url)
                     .build();
 
             userRepository.save(createdUser);

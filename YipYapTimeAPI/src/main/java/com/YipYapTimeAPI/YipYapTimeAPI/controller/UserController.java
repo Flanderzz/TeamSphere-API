@@ -28,8 +28,10 @@ import java.util.UUID;
 public class UserController {
     private final UserService userService;
 
-    public UserController(UserService userService) {
+    private final UserDTOMapper userDTOMapper;
+    public UserController(UserService userService, UserDTOMapper  userDTOMapper) {
         this.userService = userService;
+        this.userDTOMapper = userDTOMapper;
     }
 
     @PutMapping("/update/{userId}")
@@ -38,7 +40,7 @@ public class UserController {
             log.info("Processing update user request for user with ID: {}", userId);
 
             User updatedUser = userService.updateUser(userId, req);
-            UserDTO userDTO = UserDTOMapper.toUserDTO(updatedUser);
+            UserDTO userDTO = userDTOMapper.toUserDTO(updatedUser);
 
             log.info("User with ID {} updated successfully", userId);
 
@@ -56,7 +58,7 @@ public class UserController {
 
             User user = userService.findUserProfile(jwt);
 
-            UserDTO userDTO = UserDTOMapper.toUserDTO(user);
+            UserDTO userDTO = userDTOMapper.toUserDTO(user);
 
             log.info("User profile retrieved successfully");
 
@@ -78,7 +80,7 @@ public class UserController {
 
             HashSet<User> set = new HashSet<>(users);
 
-            HashSet<UserDTO> userDtos = UserDTOMapper.toUserDtos(set);
+            HashSet<UserDTO> userDtos = userDTOMapper.toUserDtos(set);
 
             log.info("Users search completed successfully for name={}", name);
 
