@@ -3,8 +3,6 @@ package com.YipYapTimeAPI.YipYapTimeAPI.DTO;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -16,8 +14,8 @@ public class ChatDTO {
     private String chatName;
     private String chatImage;
     private Boolean isGroup;
-    private Set<UUID> admins = new HashSet<>();
+    private Set<UUID> admins;
     private UUID createdBy;
-    private Set<UUID> users = new HashSet<>();
-    private List<UUID> messages = new ArrayList<>();
+    private Set<UUID> users;
+    private List<UUID> messages;
 }
