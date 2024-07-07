@@ -47,7 +47,7 @@ public class UserServiceImpl implements UserService {
         }
         if (req.getProfile_picture() != null) {
             log.info("Updating profile picture to: {}", req.getProfile_picture());
-            user.setProfile_image(req.getProfile_picture());
+            user.setProfilePicture(req.getProfile_picture());
         }
 
         // Save the updated user

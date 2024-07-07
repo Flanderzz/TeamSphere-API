@@ -19,13 +19,13 @@ import java.util.UUID;
 @Slf4j
 public class ChatServiceImpl implements ChatService {
 
-    private UserService userService;
+    private final UserService userService;
 
-    private ChatRepository chatRepo;
+    private final ChatRepository chatRepository;
 
-    public ChatServiceImpl(UserService userService, ChatRepository chatRepo) {
+    public ChatServiceImpl(UserService userService, ChatRepository chatRepository) {
         this.userService = userService;
-        this.chatRepo = chatRepo;
+        this.chatRepository = chatRepository;
     }
 
     @Override
@@ -36,7 +36,7 @@ public class ChatServiceImpl implements ChatService {
             User reqUser = userService.findUserById(reqUserId);
             User user2 = userService.findUserById(userId2);
 
-            Chat isChatExist = chatRepo.findSingleChatByUsersId(user2, reqUser);
+            Chat isChatExist = chatRepository.findSingleChatByUsersId(user2, reqUser);
 
             if (isChatExist != null) {
                 log.info("Chat already exists for users: {} and {}", reqUserId, userId2);
@@ -45,14 +45,14 @@ public class ChatServiceImpl implements ChatService {
 
             Chat chat = new Chat();
 
-            chat.setCreated_by(reqUser);
+            chat.setCreatedBy(reqUser);
             chat.getUsers().add(reqUser);
             chat.getUsers().add(user2);
-            chat.setIs_group(isGroup);
+            chat.setIsGroup(isGroup);
 
-            Chat createdChat = chatRepo.save(chat);
+            Chat createdChat = chatRepository.save(chat);
 
-            log.info("Chat created successfully. Chat ID: {}", createdChat.getId());
+            log.info("Chat created successfully. Chat: {}", createdChat);
 
             return createdChat;
         } catch (Exception e) {
@@ -66,7 +66,7 @@ public class ChatServiceImpl implements ChatService {
         try {
             log.info("Attempting to find chat by ID: {}", chatId);
 
-            Optional<Chat> chat = chatRepo.findById(chatId);
+            Optional<Chat> chat = chatRepository.findById(chatId);
 
             if (chat.isPresent()) {
                 log.info("Chat found with ID: {}", chatId);
@@ -88,7 +88,7 @@ public class ChatServiceImpl implements ChatService {
 
             User user = userService.findUserById(userId);
 
-            List<Chat> chats = chatRepo.findChatByUserId(user.getId());
+            List<Chat> chats = chatRepository.findChatByUserId(user.getId());
 
             log.info("Found {} chats for user with ID: {}", chats.size(), userId);
 
@@ -102,26 +102,29 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public Chat deleteChat(UUID chatId, UUID userId) throws ChatException, UserException {
         try {
-            log.info("Deleting chat with ID: {} by user with ID: {}", chatId, userId);
+            log.info("Attempting to delete chat with ID: {} by user with ID: {}", chatId, userId);
 
             User user = userService.findUserById(userId);
             Chat chat = findChatById(chatId);
 
-            if ((chat.getCreated_by().getId().equals(user.getId())) && !chat.getIs_group()) {
-                chatRepo.deleteById(chat.getId());
-
-                log.info("Chat deleted successfully. ID: {}, User ID: {}", chatId, userId);
-
+            // Check if the user has permission to delete the chat
+            if (chat.getCreatedBy().getId().equals(user.getId()) && !chat.getIsGroup()) {
+                chatRepository.deleteById(chat.getId());
+                log.info("Chat deleted successfully. Chat ID: {}, User ID: {}", chatId, userId);
                 return chat;
             }
 
-            log.info("User with ID {} doesn't have access to delete chat with ID: {}", userId, chatId);
-            throw new ChatException("You don't have access to delete this chat");
+            // If user does not have permission or chat is a group chat, throw an exception
+            throw new ChatException("You don't have permission to delete this chat or the chat is a group chat");
+        } catch (UserException | ChatException e) {
+            log.error("Error deleting chat with ID: {}. {}", chatId, e.getMessage(), e);
+            throw e;
         } catch (Exception e) {
-            log.error("Error deleting chat with ID: {} by user with ID: {}", chatId, userId, e);
+            log.error("Unexpected error while deleting chat with ID: {}. {}", chatId, e.getMessage(), e);
             throw new ChatException("Error deleting chat with ID: " + chatId + e);
         }
     }
+
 
     @Override
     public Chat createGroup(GroupChatRequest req, UUID reqUserId) throws UserException {
@@ -132,7 +135,7 @@ public class ChatServiceImpl implements ChatService {
 
             Chat chat = new Chat();
 
-            chat.setCreated_by(reqUser);
+            chat.setCreatedBy(reqUser);
             chat.getUsers().add(reqUser);
 
             for (UUID userId : req.getUserIds()) {
@@ -151,12 +154,12 @@ public class ChatServiceImpl implements ChatService {
 ////                    .is_group(true)
 ////                    .admins(reqUser
 ////                    .build();
-            chat.setChat_name(req.getChat_name());
-            chat.setChat_image(req.getChat_image());
-            chat.setIs_group(true);
+            chat.setChatName(req.getChat_name());
+            chat.setChatImage(req.getChat_image());
+            chat.setIsGroup(true);
             chat.getAdmins().add(reqUser);
 
-            Chat createdChat = chatRepo.save(chat);
+            Chat createdChat = chatRepository.save(chat);
 
             log.info("Group chat created successfully. Chat ID: {}", createdChat.getId());
 
@@ -169,7 +172,7 @@ public class ChatServiceImpl implements ChatService {
 
 
     @Override
-    public Chat addUserToGroup(UUID userId, UUID chatId) throws UserException, ChatException {
+    public Chat addUserToGroup(UUID userId, UUID chatId) throws UserException {
         try {
             log.info("Adding user with ID {} to group chat with ID: {}", userId, chatId);
 
@@ -178,7 +181,7 @@ public class ChatServiceImpl implements ChatService {
 
             chat.getUsers().add(user);
 
-            Chat updatedChat = chatRepo.save(chat);
+            Chat updatedChat = chatRepository.save(chat);
 
             log.info("User with ID {} added to group chat successfully. Updated chat ID: {}", userId, chatId);
 
@@ -190,7 +193,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public Chat renameGroup(UUID chatId, String groupName, UUID reqUserId) throws ChatException, UserException {
+    public Chat renameGroup(UUID chatId, String groupName, UUID reqUserId) throws UserException {
         try {
             log.info("Renaming group chat with ID: {} to: {} by user with ID: {}", chatId, groupName, reqUserId);
 
@@ -198,13 +201,13 @@ public class ChatServiceImpl implements ChatService {
             User user = userService.findUserById(reqUserId);
 
             if (chat.getUsers().contains(user)) {
-                chat.setChat_name(groupName);
+                chat.setChatName(groupName);
                 log.info("Group chat renamed successfully to: {}", groupName);
             } else {
                 log.warn("User with ID {} doesn't have permission to rename group chat with ID: {}", reqUserId, chatId);
             }
 
-            return chatRepo.save(chat);
+            return chatRepository.save(chat);
         } catch (Exception e) {
             log.error("Error renaming group chat with ID: {} by user with ID: {}", chatId, reqUserId, e);
             throw new UserException("Error renaming group chat" + e);
@@ -212,7 +215,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public Chat removeFromGroup(UUID chatId, UUID userId, UUID reqUserId) throws UserException, ChatException {
+    public Chat removeFromGroup(UUID chatId, UUID userId, UUID reqUserId) throws UserException {
         try {
             log.info("Removing user with ID {} from group chat with ID: {} by user with ID: {}", userId, chatId, reqUserId);
 

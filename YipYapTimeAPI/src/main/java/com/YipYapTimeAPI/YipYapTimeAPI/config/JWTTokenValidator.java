@@ -30,12 +30,11 @@ public class JWTTokenValidator extends OncePerRequestFilter {
         
         String jwt =request.getHeader(JWTTokenConst.HEADER);
 
-        log.info("Validating the jwt");
-
         if(jwt != null) {
             try {
+                log.info("Validating the jwt");
 
-                jwt=jwt.substring(7);
+                jwt = jwt.substring(7);
 
                 SecretKey key=Keys.hmacShaKeyFor(JWTTokenConst.JWT_KEY.getBytes());
 

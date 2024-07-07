@@ -22,11 +22,11 @@ import java.util.UUID;
 @Service
 @Slf4j
 public class MessageServiceImpl implements MessageService {
-    private MessageRepository messageRepo;
+    private final MessageRepository messageRepo;
 
-    private UserService userService;
+    private final UserService userService;
 
-    private ChatService chatService;
+    private final ChatService chatService;
 
     public MessageServiceImpl(MessageRepository messageRepo, UserService userService, ChatService chatService) {
         this.messageRepo = messageRepo;
@@ -51,7 +51,7 @@ public class MessageServiceImpl implements MessageService {
                 .username(user)
                 .content(req.getContent())
                 .timeStamp(LocalDateTime.now())
-                .is_read(false)
+                .isRead(false)
                 .build();
 
             log.info("Creating and saving the message: {}", messages);
