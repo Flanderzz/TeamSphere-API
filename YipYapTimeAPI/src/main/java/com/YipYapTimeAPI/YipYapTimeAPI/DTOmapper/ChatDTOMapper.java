@@ -1,6 +1,7 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.DTOmapper;
 
 import com.YipYapTimeAPI.YipYapTimeAPI.DTO.ChatDTO;
+import com.YipYapTimeAPI.YipYapTimeAPI.DTO.MessageDTO;
 import com.YipYapTimeAPI.YipYapTimeAPI.models.Chat;
 import com.YipYapTimeAPI.YipYapTimeAPI.models.Messages;
 import com.YipYapTimeAPI.YipYapTimeAPI.models.User;
@@ -39,5 +40,15 @@ public interface ChatDTOMapper {
     default List<UUID> messagesToMessageIds(List<Messages> messages) {
         return messages.stream().map(Messages::getId).collect(Collectors.toList());
     }
+
+    @Mappings({
+        @Mapping(source = "id", target = "id"),
+        @Mapping(source = "content", target = "content"),
+        @Mapping(source = "timeStamp", target = "timeStamp"),
+        @Mapping(source = "isRead", target = "isRead"),
+        @Mapping(source = "username.id", target = "userId"),
+        @Mapping(source = "chat.id", target = "chatId")
+    })
+    MessageDTO toMessageDto(Messages message);
 
 }

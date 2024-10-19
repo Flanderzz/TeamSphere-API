@@ -7,8 +7,6 @@ services:
       MYSQL_DATABASE: teamsphere_db
     ports:
       - "3306:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
   rabbitmq:
     image: rabbitmq:management
     environment:
@@ -19,35 +17,3 @@ services:
     ports:
       - "61613:61613"
       - "15672:15672"
-  loki:
-    container_name: loki
-    image: grafana/loki:2.9.3
-    restart: unless-stopped
-    ports:
-      - "3100:3100"
-    volumes:
-      - ./loki/config/loki-config.yaml:/etc/loki/loki-config.yaml
-      - ./loki/data:/data/loki
-    command: -config.file=/etc/loki/loki-config.yaml
-  grafana:
-    image: grafana/grafana:latest
-    restart: unless-stopped
-    user: "0"
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./grafana/data:/var/lib/grafana
-      - ./grafana/config/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
-  promtail:
-    container_name: promtail
-    image: grafana/promtail:2.9.3
-    restart: unless-stopped
-    volumes:
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - ./promtail/config/promtail-config.yaml:/etc/promtail/promtail-config.yaml
-      - /var/run/docker.sock:/var/run/docker.sock
-    command: -config.file=/etc/promtail/promtail-config.yaml
-    depends_on:
-      - loki
-volumes:
-  mysql_data:
