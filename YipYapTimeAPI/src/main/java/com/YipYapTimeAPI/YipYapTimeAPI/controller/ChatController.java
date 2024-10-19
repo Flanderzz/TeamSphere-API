@@ -1,6 +1,7 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.controller;
 
 import com.YipYapTimeAPI.YipYapTimeAPI.DTO.ChatDTO;
+import com.YipYapTimeAPI.YipYapTimeAPI.DTO.ChatSummaryDTO;
 import com.YipYapTimeAPI.YipYapTimeAPI.DTOmapper.ChatDTOMapper;
 import com.YipYapTimeAPI.YipYapTimeAPI.exception.ChatException;
 import com.YipYapTimeAPI.YipYapTimeAPI.exception.UserException;
@@ -14,6 +15,7 @@ import com.YipYapTimeAPI.YipYapTimeAPI.services.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -78,18 +80,6 @@ public class ChatController {
 
     }
 
-    @GetMapping("/user")
-    public ResponseEntity<List<ChatDTO>> findAllChatByUserIdHandler(@RequestHeader("Authorization")String jwt) throws UserException{
-
-        User user = userService.findUserProfile(jwt);
-
-        List<Chat> chats = chatService.findAllChatByUserId(user.getId());
-
-        List<ChatDTO> chatDtos = chatDTOMapper.toChatDtos(chats);
-
-        return new ResponseEntity<>(chatDtos, HttpStatus.ACCEPTED);
-    }
-
     @PutMapping("/{chatId}/add/{userId}")
     public ResponseEntity<ChatDTO> addUserToGroupHandler(@PathVariable UUID chatId,@PathVariable UUID userId) throws UserException, ChatException{
 
@@ -134,4 +124,32 @@ public class ChatController {
 
         return new ResponseEntity<>(chatDto, HttpStatus.OK);
     }
+
+    @GetMapping("/summaries")
+    public ResponseEntity<List<ChatSummaryDTO>> getChatSummariesHandler(
+            @RequestHeader("Authorization") String jwt,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size) throws ChatException {
+        try {
+            log.info("Fetching chat summaries for user");
+
+            // Retrieve user profile based on JWT
+            User user = userService.findUserProfile(jwt);
+
+            // Fetch chat summaries with pagination
+            List<ChatSummaryDTO> chatSummaries = chatService.getChatSummaries(user.getId(), page, size);
+
+            log.info("Retrieved {} chat summaries for user ID: {}", chatSummaries.size(), user.getId());
+            return new ResponseEntity<>(chatSummaries, HttpStatus.OK);
+        } catch (ChatException e) {
+            // Log the exception and return an appropriate response
+            log.error("User error fetching chat summaries: {}", e.getMessage());
+            throw e; // Let the global exception handler process this
+        } catch (Exception e) {
+            // Log the exception and throw a generic user exception
+            log.error("Error fetching chat summaries", e);
+            throw new ChatException("Error fetching chat summaries: " + e.getMessage());
+        }
+    }
+
 }
