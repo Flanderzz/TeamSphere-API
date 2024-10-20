@@ -133,7 +133,6 @@ public class ChatController {
         try {
             log.info("Fetching chat summaries for user");
 
-            // Retrieve user profile based on JWT
             User user = userService.findUserProfile(jwt);
 
             // Fetch chat summaries with pagination
@@ -142,11 +141,9 @@ public class ChatController {
             log.info("Retrieved {} chat summaries for user ID: {}", chatSummaries.size(), user.getId());
             return new ResponseEntity<>(chatSummaries, HttpStatus.OK);
         } catch (ChatException e) {
-            // Log the exception and return an appropriate response
             log.error("User error fetching chat summaries: {}", e.getMessage());
-            throw e; // Let the global exception handler process this
+            throw e;
         } catch (Exception e) {
-            // Log the exception and throw a generic user exception
             log.error("Error fetching chat summaries", e);
             throw new ChatException("Error fetching chat summaries: " + e.getMessage());
         }
