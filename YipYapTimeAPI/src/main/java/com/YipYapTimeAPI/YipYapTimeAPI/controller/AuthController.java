@@ -1,7 +1,5 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.controller;
 
-import com.YipYapTimeAPI.YipYapTimeAPI.utils.GoogleAuthRequest;
-import com.YipYapTimeAPI.YipYapTimeAPI.utils.GoogleUserInfo;
 import com.YipYapTimeAPI.YipYapTimeAPI.config.JWTTokenProvider;
 import com.YipYapTimeAPI.YipYapTimeAPI.exception.UserException;
 import com.YipYapTimeAPI.YipYapTimeAPI.models.User;
@@ -11,6 +9,8 @@ import com.YipYapTimeAPI.YipYapTimeAPI.response.AuthResponse;
 import com.YipYapTimeAPI.YipYapTimeAPI.response.CloudflareApiResponse;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.CloudflareApiService;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.impl.CustomUserDetailsService;
+import com.YipYapTimeAPI.YipYapTimeAPI.utils.GoogleAuthRequest;
+import com.YipYapTimeAPI.YipYapTimeAPI.utils.GoogleUserInfo;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -30,7 +30,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -39,9 +38,6 @@ import java.util.Optional;
 @RequestMapping("/auth")
 @Slf4j
 public class AuthController {
-    @Value("${google.client-id}")
-    private String googleClientId;
-
     private final UserRepository userRepository;
 
     private final PasswordEncoder passwordEncoder;
@@ -71,9 +67,6 @@ public class AuthController {
 
         // Check if the user is authenticated
         if (authentication != null && authentication.isAuthenticated()) {
-            // Extract user information if needed
-            String username = authentication.getName(); // Get the username
-
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
             // This block is unlikely to be hit as the filter would reject invalid tokens
@@ -180,7 +173,7 @@ public ResponseEntity<AuthResponse> authenticateWithGoogle(@RequestBody GoogleAu
         User user;
         if (optionalUser.isPresent()) {
             user = optionalUser.get(); // User found, retrieve the existing user
-            log.info("Existing user found with email: {}", email);
+            log.info("Existing user found with userId: {}", user.getId());
         } else {
             // Register a new user if not exists
             user = User.builder()
