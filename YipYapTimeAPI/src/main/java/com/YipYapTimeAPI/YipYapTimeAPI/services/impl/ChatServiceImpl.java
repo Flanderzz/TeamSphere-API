@@ -1,19 +1,26 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.services.impl;
 
+import com.YipYapTimeAPI.YipYapTimeAPI.DTO.ChatSummaryDTO;
+import com.YipYapTimeAPI.YipYapTimeAPI.DTOmapper.ChatDTOMapper;
 import com.YipYapTimeAPI.YipYapTimeAPI.exception.ChatException;
 import com.YipYapTimeAPI.YipYapTimeAPI.exception.UserException;
 import com.YipYapTimeAPI.YipYapTimeAPI.models.Chat;
+import com.YipYapTimeAPI.YipYapTimeAPI.models.Messages;
 import com.YipYapTimeAPI.YipYapTimeAPI.models.User;
 import com.YipYapTimeAPI.YipYapTimeAPI.repository.ChatRepository;
 import com.YipYapTimeAPI.YipYapTimeAPI.request.GroupChatRequest;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.ChatService;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.ArrayList;
 
 @Service
 @Slf4j
@@ -23,9 +30,12 @@ public class ChatServiceImpl implements ChatService {
 
     private final ChatRepository chatRepository;
 
-    public ChatServiceImpl(UserService userService, ChatRepository chatRepository) {
+    private final ChatDTOMapper chatDTOMapper;
+
+    public ChatServiceImpl(UserService userService, ChatRepository chatRepository, ChatDTOMapper chatDTOMapper) {
         this.userService = userService;
         this.chatRepository = chatRepository;
+        this.chatDTOMapper = chatDTOMapper;
     }
 
     @Override
@@ -78,24 +88,6 @@ public class ChatServiceImpl implements ChatService {
         } catch (Exception e) {
             log.error("Error finding chat by ID: {}", chatId, e);
             throw new ChatException("Error finding chat by ID: " + chatId + e);
-        }
-    }
-
-    @Override
-    public List<Chat> findAllChatByUserId(UUID userId) throws UserException {
-        try {
-            log.info("Finding all chats for user with ID: {}", userId);
-
-            User user = userService.findUserById(userId);
-
-            List<Chat> chats = chatRepository.findChatByUserId(user.getId());
-
-            log.info("Found {} chats for user with ID: {}", chats.size(), userId);
-
-            return chats;
-        } catch (Exception e) {
-            log.error("Error finding chats for user with ID: {}", userId, e);
-            throw new UserException("Error finding chats for user with ID: " + userId + e);
         }
     }
 
@@ -234,6 +226,58 @@ public class ChatServiceImpl implements ChatService {
         } catch (Exception e) {
             log.error("Error removing user with ID {} from group chat with ID: {} by user with ID: {}", userId, chatId, reqUserId, e);
             throw new UserException("Error removing user from group chat" + e);
+        }
+    }
+
+    @Override
+    public List<ChatSummaryDTO> getChatSummaries(UUID userId, int page, int size) throws ChatException {
+        try {
+            log.info("Getting chat summaries for user with ID: {}", userId);
+
+            Pageable pageable = PageRequest.of(page, size);
+            Page<Chat> userChatsPage = chatRepository.findChatsByUserId(userId, pageable);
+            List<Chat> userChats = userChatsPage.getContent();
+
+            List<ChatSummaryDTO> chatSummaries = new ArrayList<>();
+            for (Chat chat : userChats) {
+                String[] chatInfo = { chat.getChatName(), chat.getChatImage() };
+
+                if (!chat.getIsGroup()) {
+                    // Use a wrapper object or array to hold mutable state
+                    final String[] chatNameImage = { chat.getChatName(), chat.getChatImage() };
+
+                    chat.getUsers().stream()
+                            .filter(user -> !user.getId().equals(userId))
+                            .findFirst()
+                            .ifPresent(otherUser -> {
+                                chatNameImage[0] = otherUser.getUsername();
+                                chatNameImage[1] = otherUser.getProfilePicture();
+                            });
+                    chatInfo[0] = chatNameImage[0];
+                    chatInfo[1] = chatNameImage[1];
+                }
+                Messages lastMessage = null;
+                if (!chat.getMessages().isEmpty()) {
+                    lastMessage = chat.getMessages().get(chat.getMessages().size() - 1);
+                }
+
+                ChatSummaryDTO summary = ChatSummaryDTO.builder()
+                        .id(chat.getId())
+                        .chatName(chatInfo[0])
+                        .chatImage(chatInfo[1])
+                        .createdBy(chat.getCreatedBy().getId())
+                        .lastMessage(lastMessage != null ? chatDTOMapper.toMessageDto(lastMessage) : null)
+                        .build();
+
+                chatSummaries.add(summary);
+            }
+
+            log.info("Retrieved {} chat summaries for user with ID: {}", chatSummaries.size(), userId);
+
+            return chatSummaries;
+        } catch (Exception e) {
+            log.error("Error getting chat summaries for user with ID: {}", userId, e);
+            throw new ChatException("Error getting chat summaries for user with ID: " + userId + ". " + e.getMessage());
         }
     }
 

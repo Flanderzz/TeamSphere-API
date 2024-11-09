@@ -30,3 +30,7 @@ app:
     ALLOWED_ORIGINS:
       - http://localhost:3000
       - http://localhost:4173
+
+google:
+  client-id:
+  client-secret:

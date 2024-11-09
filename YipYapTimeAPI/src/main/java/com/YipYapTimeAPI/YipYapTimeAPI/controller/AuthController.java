@@ -9,6 +9,8 @@ import com.YipYapTimeAPI.YipYapTimeAPI.response.AuthResponse;
 import com.YipYapTimeAPI.YipYapTimeAPI.response.CloudflareApiResponse;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.CloudflareApiService;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.impl.CustomUserDetailsService;
+import com.YipYapTimeAPI.YipYapTimeAPI.utils.GoogleAuthRequest;
+import com.YipYapTimeAPI.YipYapTimeAPI.utils.GoogleUserInfo;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -20,6 +22,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,7 +31,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-
 import java.util.Objects;
 import java.util.Optional;
 
@@ -36,15 +38,15 @@ import java.util.Optional;
 @RequestMapping("/auth")
 @Slf4j
 public class AuthController {
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
-    private JWTTokenProvider jwtTokenProvider;
+    private final JWTTokenProvider jwtTokenProvider;
 
-    private CustomUserDetailsService customUserDetails;
+    private final CustomUserDetailsService customUserDetails;
 
-    private CloudflareApiService cloudflareApiService;
+    private final CloudflareApiService cloudflareApiService;
 
     public AuthController(UserRepository userRepository,
                           PasswordEncoder passwordEncoder,
@@ -59,6 +61,19 @@ public class AuthController {
         this.cloudflareApiService=cloudflareApiService;
     }
 
+    @GetMapping("/verify")
+    public ResponseEntity<String> verifyJwtToken() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // Check if the user is authenticated
+        if (authentication != null && authentication.isAuthenticated()) {
+            return new ResponseEntity<>(HttpStatus.OK);
+        } else {
+            // This block is unlikely to be hit as the filter would reject invalid tokens
+            return new ResponseEntity<>("Token is invalid or not provided.", HttpStatus.UNAUTHORIZED);
+        }
+    }
+
     @PostMapping(value="/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<AuthResponse> userSignupMethod (@Valid @ModelAttribute User user, @RequestParam("file") MultipartFile file) throws UserException {
         try {
@@ -69,44 +84,50 @@ public class AuthController {
             String password = user.getPassword();
             String username = user.getUsername();
 
-            Optional<User> isEmailExist = userRepository.findByEmail(email);
-
-            // Check if user with the given email already exists
-            if (isEmailExist.isPresent()) {
+            // Check if user with the given email or username already exists
+            if (userRepository.findByEmail(email).isPresent()) {
                 log.warn("Email={} is already used with another account", email);
                 throw new UserException("Email is already used with another account");
             }
 
-            // Authenticate user and generate JWT token
-            Authentication authentication = new UsernamePasswordAuthenticationToken(email, password);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            if (userRepository.findByUsername(username).isPresent()) {
+                log.warn("Username={} is already used with another account", username);
+                throw new UserException("Username is already used with another account");
+            }
 
-            String token = jwtTokenProvider.generateJwtToken(authentication);
-
-            AuthResponse authResponse = new AuthResponse(token, true);
-
+            // Upload profile picture to Cloudflare
             CloudflareApiResponse responseEntity = cloudflareApiService.uploadImage(file, user);
-
             String baseUrl = Objects.requireNonNull(responseEntity.getResult().getVariants().get(0));
-            String profile_url = baseUrl.substring(0, baseUrl.lastIndexOf("/") + 1) + "chatProfilePicture";
+            String profileUrl = baseUrl.substring(0, baseUrl.lastIndexOf("/") + 1) + "chatProfilePicture";
+
 
             // Creating a new user
             User createdUser = User.builder()
                     .email(email)
                     .username(username)
                     .password(passwordEncoder.encode(password))
-                    .profilePicture(profile_url)
+                    .profilePicture(profileUrl)
                     .build();
 
             userRepository.save(createdUser);
 
+            // auto-login after signup
+            Authentication authentication = new UsernamePasswordAuthenticationToken(email, password);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String token = jwtTokenProvider.generateJwtToken(authentication);
+
+            AuthResponse authResponse = new AuthResponse(token, true);
+
             log.info("Signup process completed successfully for user with email: {}", email);
 
-            return new ResponseEntity<>(authResponse, HttpStatus.OK);
+            return new ResponseEntity<>(authResponse, HttpStatus.CREATED);
 
-        } catch (Exception e) {
+        } catch (UserException e) {
             log.error("Error during signup process", e);
-            throw new UserException("Error during signup process" + e);
+            throw e; // Rethrow specific exception to be handled by global exception handler
+        } catch (Exception e) {
+            log.error("Unexpected error during signup process", e);
+            throw new UserException("Unexpected error during signup process");
         }
     }
 
@@ -127,11 +148,59 @@ public class AuthController {
             log.info("Login successful for user with username: {}", username);
 
             return new ResponseEntity<>(authResponse, HttpStatus.OK);
+        } catch (BadCredentialsException e) {
+            log.warn("Authentication failed for user with username: {}", loginRequest.getEmail());
+            throw new UserException("Invalid username or password.");
         } catch (Exception e) {
-            log.error("Error during login process", e);
-            throw new UserException("Error during login process" + e);
+            log.error("Unexpected error during login process", e);
+            throw new UserException("Unexpected error during login process.");
         }
     }
+
+@PostMapping("/google")
+public ResponseEntity<AuthResponse> authenticateWithGoogle(@RequestBody GoogleAuthRequest request) {
+    try {
+        log.info("Processing Google authentication request");
+
+        GoogleUserInfo googleUserInfo = request.getGoogleUserInfo();
+        
+        String email = googleUserInfo.getEmail();
+        String username = googleUserInfo.getGiven_name();
+        String pictureUrl = googleUserInfo.getPicture();
+
+        // Check if user exists
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+        User user;
+        if (optionalUser.isPresent()) {
+            user = optionalUser.get(); // User found, retrieve the existing user
+            log.info("Existing user found with userId: {}", user.getId());
+        } else {
+            // Register a new user if not exists
+            user = User.builder()
+                    .email(email)
+                    .username(username)
+                    .profilePicture(pictureUrl)
+                    .build();
+
+            userRepository.save(user);
+            log.info("New user created with email: {}", email);
+        }
+
+        // Load UserDetails and set authentication context
+        Authentication authentication = new UsernamePasswordAuthenticationToken(email, null);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // Generate JWT token
+        String token = jwtTokenProvider.generateJwtToken(authentication);
+
+        AuthResponse authResponse = new AuthResponse(token, true);
+        return new ResponseEntity<>(authResponse, HttpStatus.OK);
+
+    } catch (Exception e) {
+        log.error("Error during Google authentication: ", e);
+        return new ResponseEntity<>(new AuthResponse("Error during Google authentication: " + e.getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+}
 
     private Authentication authentication(String email, String password) {
         log.info("Authenticating user with email: {}", email);
