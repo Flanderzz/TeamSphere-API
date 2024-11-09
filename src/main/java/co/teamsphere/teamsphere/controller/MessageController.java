@@ -45,7 +45,6 @@ public class MessageController {
             log.info("Processing send message request to userId: {}", req.getUserId());
 
             User reqUser = userService.findUserProfile(jwt);
-            //we are set a new userId and ignoring the one in the request
             req.setUserId(reqUser.getId());
 
             Messages messages = messageService.sendMessage(req);

@@ -1,6 +1,7 @@
 package co.teamsphere.teamsphere.controller;
 
 import co.teamsphere.teamsphere.DTO.ChatDTO;
+import co.teamsphere.teamsphere.DTO.ChatSummaryDTO;
 import co.teamsphere.teamsphere.DTOmapper.ChatDTOMapper;
 import co.teamsphere.teamsphere.exception.ChatException;
 import co.teamsphere.teamsphere.exception.UserException;
@@ -14,6 +15,7 @@ import co.teamsphere.teamsphere.services.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,7 +37,7 @@ public class ChatController {
     private final ChatService chatService;
 
     private final UserService userService;
-    
+
     private final ChatDTOMapper chatDTOMapper;
 
     public ChatController(ChatService chatService, UserService userService, ChatDTOMapper chatDTOMapper) {
@@ -76,18 +78,6 @@ public class ChatController {
 
         return new ResponseEntity<>(chatDto, HttpStatus.OK);
 
-    }
-
-    @GetMapping("/user")
-    public ResponseEntity<List<ChatDTO>> findAllChatByUserIdHandler(@RequestHeader("Authorization")String jwt) throws UserException{
-
-        User user = userService.findUserProfile(jwt);
-
-        List<Chat> chats = chatService.findAllChatByUserId(user.getId());
-
-        List<ChatDTO> chatDtos = chatDTOMapper.toChatDtos(chats);
-
-        return new ResponseEntity<>(chatDtos, HttpStatus.ACCEPTED);
     }
 
     @PutMapping("/{chatId}/add/{userId}")
@@ -134,4 +124,29 @@ public class ChatController {
 
         return new ResponseEntity<>(chatDto, HttpStatus.OK);
     }
+
+    @GetMapping("/summaries")
+    public ResponseEntity<List<ChatSummaryDTO>> getChatSummariesHandler(
+            @RequestHeader("Authorization") String jwt,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size) throws ChatException {
+        try {
+            log.info("Fetching chat summaries for user");
+
+            User user = userService.findUserProfile(jwt);
+
+            // Fetch chat summaries with pagination
+            List<ChatSummaryDTO> chatSummaries = chatService.getChatSummaries(user.getId(), page, size);
+
+            log.info("Retrieved {} chat summaries for user ID: {}", chatSummaries.size(), user.getId());
+            return new ResponseEntity<>(chatSummaries, HttpStatus.OK);
+        } catch (ChatException e) {
+            log.error("User error fetching chat summaries: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Error fetching chat summaries", e);
+            throw new ChatException("Error fetching chat summaries: " + e.getMessage());
+        }
+    }
+
 }

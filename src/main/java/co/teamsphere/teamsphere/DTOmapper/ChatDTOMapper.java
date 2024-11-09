@@ -1,6 +1,7 @@
 package co.teamsphere.teamsphere.DTOmapper;
 
 import co.teamsphere.teamsphere.DTO.ChatDTO;
+import co.teamsphere.teamsphere.DTO.MessageDTO;
 import co.teamsphere.teamsphere.models.Chat;
 import co.teamsphere.teamsphere.models.Messages;
 import co.teamsphere.teamsphere.models.User;
@@ -39,5 +40,13 @@ public interface ChatDTOMapper {
     default List<UUID> messagesToMessageIds(List<Messages> messages) {
         return messages.stream().map(Messages::getId).collect(Collectors.toList());
     }
-
+    @Mappings({
+            @Mapping(source = "id", target = "id"),
+            @Mapping(source = "content", target = "content"),
+            @Mapping(source = "timeStamp", target = "timeStamp"),
+            @Mapping(source = "isRead", target = "isRead"),
+            @Mapping(source = "username.id", target = "userId"),
+            @Mapping(source = "chat.id", target = "chatId")
+    })
+    MessageDTO toMessageDto(Messages message);
 }
