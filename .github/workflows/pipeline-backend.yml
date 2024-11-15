@@ -1,0 +1,105 @@
+name: Docker Build and Push
+
+on:
+  push:
+    branches:
+      - '*'
+    tags:
+      - 'release-[0-9]+.[0-9]+.[0-9]+'
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  build:
+    name: Build & push docker image
+    runs-on: ubuntu-latest
+    env:
+      REGISTRY: registry.digitalocean.com
+      REGISTRY_NAME: teamsphere
+      REPOSITORY: ${{ github.repository }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+
+      - name: Running Unit Tests
+        run: |
+          cd book-network
+          ./mvnw clean compile install
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DO_REGISTRY_TOKEN }}
+
+      - name: Log in to DigitalOcean Container Registry
+        run: doctl registry login --expiry-seconds 1200
+
+      - name: Docker metadata
+        id: metadata
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.REGISTRY_NAME }}/${{ env.REPOSITORY }}
+          tags: |
+            # For release tags (e.g., release-1.0.0)
+            type=match,pattern=release-(.*),group=1
+            type=match,pattern=release-(\d+.\d+).*,group=1
+            type=match,pattern=release-(\d+.\d+).*,group=1
+            
+            # For branches (e.g., main -> main, feature/xyz -> feature-xyz)
+            type=ref,event=branch
+            
+            # For pull requests (PR-123)
+            type=ref,event=pr
+            
+            # Latest tag for default branch
+            type=raw,value=latest,enable={{is_default_branch}}
+            
+            # Short SHA for non-release commits
+            type=sha,format=short,prefix=,enable=${{ github.ref_type != 'tag' }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64
+          tags: ${{ steps.metadata.outputs.tags }}
+          labels: ${{ steps.metadata.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            PROFILE=prod
+            APP_VERSION= ${{ steps.metadata.outputs.tags }}
+
+  deploy:
+    name: Deploy Backend
+    runs-on: self-hosted
+    needs: [build-image]
+    steps:
+
+      - name: Create deployment folder
+        run: ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} "mkdir -p ci-cd"
+
+      - name: Copy docker-compose file
+        run: scp -oStrictHostKeyChecking=no docker-compose.yml ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}:ci-cd/docker-compose.yml
+
+      - name: Set ENV variable and deploy
+        run: |
+          ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} <<EOF
+          export EMAIL_HOST_NAME=${{ secrets.EMAIL_HOST_NAME }}
+          export EMAIL_USER_NAME=${{ secrets.EMAIL_USER_NAME }}
+          export EMAIL_PASSWORD=${{ secrets.EMAIL_PASSWORD }}
+          cd ci-cd
+          docker compose -f docker-compose.yml pull -q
+          docker compose -f docker-compose.yml up -d
+          EOF

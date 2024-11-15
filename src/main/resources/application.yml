@@ -1,34 +1,32 @@
-_logging_pattern: "%d{yyyy-MM-dd HH:mm:ss.SSS} ${LOG_LEVEL_PATTERN:%5level} log_level=\"%level\" ${PID:- } --- [thread=\"%thread\", httpMethod=\"%X{httpMethod:-null}\", httpRequestURI=\"%X{httpRequestURI:-null}\", X-Request-ID=\"%X{requestId:-null}\"] [%15.15t] %-40.40logger{39} : %replace(%msg){'\r\n|\n', '\u2028'} %replace(%ex{full}){'\r\n|\n', '\u2028'}%nopex"
-_logging_pattern_console: "${_logging_pattern}%n"
-logging:
-  pattern:
-    console: ${_logging_pattern_console}
-  level:
-    org:
-      org.springframework.web.servlet.DispatcherServlet: OFF
+cloudflare:
+  api:
+    accountID: ''
+    key: ''
+server:
+  port: 5454
 spring:
   datasource:
-    driver-class-name: ''
-    password: ''
-    url: ''
-    username: ''
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    password: my-secret-pw
+    url: jdbc:mysql://localhost:3306/teamsphere_db
+    username: root
   jpa:
+    database: mysql
     hibernate:
       ddl-auto: update
     show-sql: true
-  profiles:
-    active: local
   rabbitmq:
-    cache:
-      channel:
-        size: 10
-    host: ''
-    password: ''
-    port: 15672
+    host: localhost
+    password: guest
+    port: 61613
     requested-heartbeat: 580
-    username: ''
-    virtual-host: ''
-twilio:
-  accountSid: ''
-  authToken: ''
-  phoneNumber: ''
+    username: guest
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+app:
+  environment:
+    ALLOWED_ORIGINS:
+      - http://localhost:3000
+      - http://localhost:4173

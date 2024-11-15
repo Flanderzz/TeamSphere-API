@@ -1,5 +1,4 @@
-FROM arm64v8/eclipse-temurin:17 as build
-
+FROM eclipse-temurin:17-jdk-alpine AS build
 LABEL authors="bravin"
 
 WORKDIR /workspace/app
@@ -9,14 +8,27 @@ COPY .mvn .mvn
 COPY pom.xml .
 COPY src src
 
-RUN ./mvnw install -DskipTests
-RUN mkdir -p target/dependency && (cd target/dependency; jar -xf ../*.jar)
+# Fix executable permission for mvnw
+RUN chmod +x mvnw
+# Package the application skipping tests
+RUN ./mvnw clean package -DskipTests
 
-FROM arm64v8/eclipse-temurin:17
-
+FROM eclipse-temurin:17-jdk-alpine
 VOLUME /tmp
-ARG DEPENDENCY=/workspace/app/target/dependency
-COPY --from=build ${DEPENDENCY}/BOOT-INF/lib /app/lib
-COPY --from=build ${DEPENDENCY}/META-INF /app/META-INF
-COPY --from=build ${DEPENDENCY}/BOOT-INF/classes /app
-ENTRYPOINT ["java","-cp","app:app/lib/*","com.YipYapTimeAPI.YipYapTimeAPI.YipYapTimeApiApplication"]
+
+# Environment variables
+ENV ACTIVE_PROFILE=${PROFILE}
+ENV JAR_VERSION=${APP_VERSION}
+ENV CLOUDFLARE_ACCOUNTID=${CLOUDFLARE_ACCOUNTID}
+ENV CLOUDFLARE_KEY=${CLOUDFLARE_KEY}
+ENV MYSQL_USERNAME=${MYSQL_USERNAME}
+ENV MYSQL_PASSWORD=${MYSQL_PASSWORD}
+ENV RABBITMQ_USERNAME=${RABBITMQ_USERNAME}
+ENV RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+ENV ALLOWED_ORIGIN=${ALLOWED_ORIGIN}
+
+# Copy the JAR file with version
+COPY --from=build /workspace/app/target/*.jar ${JAR_VERSION}.jar
+
+# Run the jar file with version
+CMD ["sh", "-c", "java -Dspring.profiles.active=${ACTIVE_PROFILE} -jar ${JAR_VERSION}.jar"]
