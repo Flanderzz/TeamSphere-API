@@ -33,7 +33,6 @@ jobs:
 
       - name: Running Unit Tests
         run: |
-          cd book-network
           ./mvnw clean compile install
 
       - name: Install doctl
