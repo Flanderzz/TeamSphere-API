@@ -84,7 +84,7 @@ jobs:
   deploy:
     name: Deploy Backend
     runs-on: self-hosted
-    needs: [build-image]
+    needs: [build]
     steps:
 
       - name: Create deployment folder
