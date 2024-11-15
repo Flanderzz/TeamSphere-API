@@ -28,6 +28,7 @@ public class JWTTokenProvider {
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(new Date().getTime()+86400000))
                 .claim("email", authentication.getName())
+                .claim("authorities", "ROLE_USER")
                 .signWith(key)
                 .compact();
 

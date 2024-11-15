@@ -44,7 +44,7 @@ public class JWTTokenValidator extends OncePerRequestFilter {
                         .parseClaimsJws(jwt)
                         .getBody();
 
-                String username = claim.getSubject();
+                String username = (String) claim.get("email");
                 String authorities = claim.get("authorities", String.class);
 
                 List<GrantedAuthority> auths = AuthorityUtils.commaSeparatedStringToAuthorityList(authorities);
