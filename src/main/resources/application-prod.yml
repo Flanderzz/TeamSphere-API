@@ -8,13 +8,12 @@ cloudflare:
   api:
     accountID: ${CLOUDFLARE_ACCOUNTID}
     key: ${CLOUDFLARE_KEY}
-server:
-  port: 5454
+
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     password: ${MYSQL_PASSWORD}
-    url: jdbc:mysql://mysql:3306/teamsphere_db
+    url: jdbc:mysql://mysql:3306/${MYSQL_DATABASE}
     username: ${MYSQL_USERNAME}
   jpa:
     database: mysql
