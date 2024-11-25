@@ -1,6 +1,5 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.services.impl;
 
-import com.YipYapTimeAPI.YipYapTimeAPI.models.User;
 import com.YipYapTimeAPI.YipYapTimeAPI.response.CloudflareApiResponse;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.CloudflareApiService;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,6 +23,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Service
+@Validated
 @Slf4j
 public class CloudflareApiServiceImpl implements CloudflareApiService {
 
@@ -40,12 +41,13 @@ public class CloudflareApiServiceImpl implements CloudflareApiService {
     }
 
     @Override
-    public CloudflareApiResponse uploadImage(MultipartFile imageFile, User user) throws IOException  {
+    public CloudflareApiResponse uploadImage(MultipartFile imageFile) throws IOException  {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
         headers.set("Authorization", apiToken + cloudflareApiKey);
 
-        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        var body = new LinkedMultiValueMap<String, Object>();
+
         body.add("file", new ByteArrayResource(imageFile.getBytes()) {
             @Override
             public String getFilename() {

@@ -9,18 +9,22 @@ import com.YipYapTimeAPI.YipYapTimeAPI.services.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@Validated
 @Slf4j
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepo;
-
     private final JWTTokenProvider jwtTokenProvider;
 
     public UserServiceImpl( UserRepository userRepo, JWTTokenProvider jwtTokenProvider) {
@@ -29,6 +33,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public User updateUser(UUID userId, UpdateUserRequest req) throws UserException {
 
         log.info("Attempting to update user with ID: {}", userId);
@@ -50,6 +55,8 @@ public class UserServiceImpl implements UserService {
             user.setProfilePicture(req.getProfile_picture());
         }
 
+        user.setLastUpdatedDate(LocalDateTime.now().atOffset(ZoneOffset.UTC));
+
         // Save the updated user
         User updatedUser = userRepo.save(user);
         log.info("User updated successfully. Updated user details: {}", updatedUser);
@@ -58,6 +65,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public User findUserById(UUID userId) throws UserException {
         log.info("Attempting to find user by ID: {}", userId);
 
@@ -73,6 +81,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public User findUserProfile(String jwt) {
         log.info("Attempting to find user profile using JWT");
 
@@ -91,6 +100,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<User> searchUser(String query) {
         log.info("Searching users with query: {}", query);
 

@@ -9,6 +9,6 @@ import java.io.IOException;
 
 @Service
 public interface CloudflareApiService {
-    CloudflareApiResponse uploadImage(MultipartFile imageFile, User user) throws IOException;
+    CloudflareApiResponse uploadImage(MultipartFile imageFile) throws IOException;
 }
 

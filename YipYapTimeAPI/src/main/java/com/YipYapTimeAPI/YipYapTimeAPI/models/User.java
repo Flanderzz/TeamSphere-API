@@ -1,14 +1,15 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -22,13 +23,22 @@ public class User {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(unique = true)
     private String username;
 
     private String password;
 
+    @Column(unique = true)
     private String email;
 
+    // In an ideal world, this should be unique? but i dont think it matters ngl
     private String profilePicture;
+
+    @Column(nullable = false)
+    private OffsetDateTime createdDate;
+
+    @Column(nullable = false)
+    private OffsetDateTime lastUpdatedDate;
 
     @Override
     public boolean equals(Object o) {

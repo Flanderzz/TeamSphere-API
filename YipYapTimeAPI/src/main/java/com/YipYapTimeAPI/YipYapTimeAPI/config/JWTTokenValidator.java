@@ -52,7 +52,7 @@ public class JWTTokenValidator extends OncePerRequestFilter {
 
                 List<GrantedAuthority> auths = AuthorityUtils.commaSeparatedStringToAuthorityList(authorities);
 
-                Authentication auth=new UsernamePasswordAuthenticationToken(username, null,auths);
+                Authentication auth = new UsernamePasswordAuthenticationToken(username, null ,auths);
 
                 SecurityContextHolder.getContext().setAuthentication(auth);
             } catch (ExpiredJwtException e) {
