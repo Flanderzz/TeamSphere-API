@@ -1,5 +1,6 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.config;
 
+import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -20,16 +21,22 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 
 @Configuration
 public class AppConfiguration {
-
     private final AppProperties appProperties;
 
-    public AppConfiguration(AppProperties appProperties) {
+    private final PublicKey publicKey;
+
+    private final JwtProperties jwtProperties;
+
+    public AppConfiguration(AppProperties appProperties,
+                            PublicKey publicKey,
+                            JwtProperties jwtProperties) {
         this.appProperties = appProperties;
+        this.publicKey = publicKey;
+        this.jwtProperties = jwtProperties;
     }
 
     @Bean
     public SecurityFilterChain securityAppConfig(HttpSecurity http) throws Exception {
-
         http
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
                 .authorizeHttpRequests(auth -> auth
@@ -37,7 +44,7 @@ public class AppConfiguration {
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .anyRequest().permitAll()
                 )
-                .addFilterBefore(new JWTTokenValidator(), BasicAuthenticationFilter.class)
+                .addFilterBefore(new JWTTokenValidator(publicKey, jwtProperties), BasicAuthenticationFilter.class)
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()));
 

@@ -1,4 +1,5 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.config;
+import java.security.PublicKey;
 import java.util.List;
 import java.io.IOException;
 
@@ -25,9 +26,14 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @Slf4j
 public class JWTTokenValidator extends OncePerRequestFilter {
+    private final PublicKey publicKey;
 
-    private final SecretKey key = Keys.hmacShaKeyFor(JWTTokenConst.JWT_KEY.getBytes());
+    private final JwtProperties jwtProperties;
 
+    public JWTTokenValidator(PublicKey publicKey, JwtProperties jwtProperties) {
+        this.publicKey = publicKey;
+        this.jwtProperties = jwtProperties;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -42,10 +48,15 @@ public class JWTTokenValidator extends OncePerRequestFilter {
                 jwt = jwt.substring(7);
 
                 Claims claim = Jwts.parserBuilder()
-                        .setSigningKey(key)
+                        .setSigningKey(publicKey)
                         .build()
                         .parseClaimsJws(jwt)
                         .getBody();
+
+                String audience = claim.getAudience();
+                if (!jwtProperties.getAudience().equals(audience)) {
+                    throw new JwtException("Invalid audience: " + audience);
+                }
 
                 String username = claim.getSubject();
                 String authorities = claim.get("authorities", String.class);
