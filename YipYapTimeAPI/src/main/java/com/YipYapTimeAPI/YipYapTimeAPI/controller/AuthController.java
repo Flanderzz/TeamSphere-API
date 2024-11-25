@@ -46,20 +46,16 @@ public class AuthController {
 
     private final JWTTokenProvider jwtTokenProvider;
 
-    private final CustomUserDetailsService customUserDetails;
-
     private final AuthenticationService authenticationService;
 
     public AuthController(UserRepository userRepository,
                           PasswordEncoder passwordEncoder,
                           JWTTokenProvider jwtTokenProvider,
-                          CustomUserDetailsService customUserDetails,
                           AuthenticationService authenticationService
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
-        this.customUserDetails = customUserDetails;
         this.authenticationService = authenticationService;
     }
 
