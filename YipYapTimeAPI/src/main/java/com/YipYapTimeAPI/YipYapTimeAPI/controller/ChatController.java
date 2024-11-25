@@ -12,6 +12,11 @@ import com.YipYapTimeAPI.YipYapTimeAPI.request.RenameGroupChatRequest;
 import com.YipYapTimeAPI.YipYapTimeAPI.request.SingleChatRequest;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.ChatService;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,12 +45,30 @@ public class ChatController {
     
     private final ChatDTOMapper chatDTOMapper;
 
-    public ChatController(ChatService chatService, UserService userService, ChatDTOMapper chatDTOMapper) {
+    public ChatController(ChatService chatService,
+                          UserService userService,
+                          ChatDTOMapper chatDTOMapper
+    ) {
         this.chatService = chatService;
         this.userService = userService;
         this.chatDTOMapper = chatDTOMapper;
     }
 
+    @Operation(summary = "Create a single chat", description = "Creates a single chat between the authenticated user and another user.")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Chat created successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    implementation = ChatDTO.class
+                            )
+                    )
+            ),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "400", description = "Bad request")
+    })
     @PostMapping("/single")
     public ResponseEntity<ChatDTO> creatChatHandler(@RequestBody SingleChatRequest singleChatRequest, @RequestHeader("Authorization")  String jwt) throws UserException {
 
@@ -57,6 +80,21 @@ public class ChatController {
         return new ResponseEntity<>(chatDto, HttpStatus.OK);
     }
 
+    @Operation(summary = "Create a group chat", description = "Creates a group chat with the specified users.")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Group chat created successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    implementation = ChatDTO.class
+                            )
+                    )
+            ),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "400", description = "Bad request")
+    })
     @PostMapping("/group")
     public ResponseEntity<ChatDTO> createGroupHandler(@RequestBody GroupChatRequest groupChatRequest, @RequestHeader("Authorization") String jwt) throws UserException{
 
@@ -69,6 +107,20 @@ public class ChatController {
 
     }
 
+    @Operation(summary = "Get chat by ID", description = "Fetches a chat by its unique ID.")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Chat fetched successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    implementation = ChatDTO.class
+                            )
+                    )
+            ),
+            @ApiResponse(responseCode = "404", description = "Chat not found")
+    })
     @GetMapping("/{chatId}")
     public ResponseEntity<ChatDTO> findChatByIdHandler(@PathVariable UUID chatId) throws ChatException {
 
@@ -80,6 +132,21 @@ public class ChatController {
 
     }
 
+    @Operation(summary = "Add user to group chat", description = "Adds a user to an existing group chat.")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "User added to group successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    implementation = ChatDTO.class
+                            )
+                    )
+            ),
+            @ApiResponse(responseCode = "404", description = "Chat or user not found"),
+            @ApiResponse(responseCode = "403", description = "Unauthorized action")
+    })
     @PutMapping("/{chatId}/add/{userId}")
     public ResponseEntity<ChatDTO> addUserToGroupHandler(@PathVariable UUID chatId,@PathVariable UUID userId) throws UserException, ChatException{
 
@@ -91,6 +158,21 @@ public class ChatController {
         return new ResponseEntity<>(chatDto, HttpStatus.OK);
     }
 
+    @Operation(summary = "Rename group chat", description = "Renames an existing group chat.")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Group renamed successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    implementation = ChatDTO.class
+                            )
+                    )
+            ),
+            @ApiResponse(responseCode = "404", description = "Chat not found"),
+            @ApiResponse(responseCode = "403", description = "Unauthorized action")
+    })
     @PutMapping("/{chatId}/rename")
     public ResponseEntity<ChatDTO> renameGroupHandler(@PathVariable UUID chatId, @RequestBody RenameGroupChatRequest renameGroupRequest, @RequestHeader("Authorization") String jwt) throws ChatException, UserException{
 
@@ -103,6 +185,21 @@ public class ChatController {
         return new ResponseEntity<>(chatDto, HttpStatus.OK);
     }
 
+    @Operation(summary = "Remove user from group chat", description = "Removes a user from an existing group chat.")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "User removed successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    implementation = ChatDTO.class
+                            )
+                    )
+            ),
+            @ApiResponse(responseCode = "404", description = "Chat or user not found"),
+            @ApiResponse(responseCode = "403", description = "Unauthorized action")
+    })
     @PutMapping("/{chatId}/remove/{userId}")
     public ResponseEntity<ChatDTO> removeFromGroupHandler(@RequestHeader("Authorization") String jwt, @PathVariable UUID chatId,@PathVariable UUID userId) throws UserException, ChatException{
 
@@ -116,6 +213,21 @@ public class ChatController {
         return new ResponseEntity<>(chatDto, HttpStatus.OK);
     }
 
+    @Operation(summary = "Delete chat", description = "Deletes a chat based on its ID and the user's ID.")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Chat deleted successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    implementation = ChatDTO.class
+                            )
+                    )
+            ),
+            @ApiResponse(responseCode = "404", description = "Chat not found"),
+            @ApiResponse(responseCode = "403", description = "Unauthorized action")
+    })
     @DeleteMapping("/delete/{chatId}/{userId}")
     public ResponseEntity<ChatDTO> deleteChatHandler(@PathVariable UUID chatId, @PathVariable UUID userId) throws ChatException, UserException{
 
@@ -125,6 +237,20 @@ public class ChatController {
         return new ResponseEntity<>(chatDto, HttpStatus.OK);
     }
 
+    @Operation(summary = "Get chat summaries", description = "Fetches summaries of chats for the authenticated user.")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Chat summaries retrieved successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    implementation = List.class
+                            )
+                    )
+            ),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
     @GetMapping("/summaries")
     public ResponseEntity<List<ChatSummaryDTO>> getChatSummariesHandler(
             @RequestHeader("Authorization") String jwt,

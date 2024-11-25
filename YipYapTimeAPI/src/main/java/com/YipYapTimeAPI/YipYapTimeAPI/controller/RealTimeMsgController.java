@@ -23,15 +23,18 @@ import java.util.Iterator;
 @Slf4j
 public class RealTimeMsgController {
 
-    private SimpMessagingTemplate simpMessagingTemplate;
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
-    private UserService userService;
+    private final UserService userService;
 
-    private MessageService messageService;
+    private final MessageService messageService;
 
-    private ChatService chatService;
+    private final ChatService chatService;
 
-    public RealTimeMsgController(SimpMessagingTemplate simpMessagingTemplate, UserService userService, MessageService messageService, ChatService chatService) {
+    public RealTimeMsgController(SimpMessagingTemplate simpMessagingTemplate,
+                                 UserService userService,
+                                 MessageService messageService,
+                                 ChatService chatService) {
         this.simpMessagingTemplate = simpMessagingTemplate;
         this.userService = userService;
         this.messageService = messageService;

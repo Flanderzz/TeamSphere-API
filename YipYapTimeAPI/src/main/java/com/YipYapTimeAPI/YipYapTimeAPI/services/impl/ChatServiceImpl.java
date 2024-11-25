@@ -16,6 +16,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +25,7 @@ import java.util.UUID;
 import java.util.ArrayList;
 
 @Service
+@Validated
 @Slf4j
 public class ChatServiceImpl implements ChatService {
 
@@ -39,6 +42,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    @Transactional
     public Chat createChat(UUID reqUserId, UUID userId2, boolean isGroup) throws UserException {
         try {
             log.info("Creating chat. reqUserId: {}, userId2: {}, isGroup: {}", reqUserId, userId2, isGroup);
@@ -72,6 +76,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Chat findChatById(UUID chatId) throws ChatException {
         try {
             log.info("Attempting to find chat by ID: {}", chatId);
@@ -92,6 +97,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    @Transactional
     public Chat deleteChat(UUID chatId, UUID userId) throws ChatException, UserException {
         try {
             log.info("Attempting to delete chat with ID: {} by user with ID: {}", chatId, userId);
@@ -119,6 +125,7 @@ public class ChatServiceImpl implements ChatService {
 
 
     @Override
+    @Transactional
     public Chat createGroup(GroupChatRequest req, UUID reqUserId) throws UserException {
         try {
             log.info("Creating group chat. Requested by user with ID: {}", reqUserId);
@@ -164,6 +171,7 @@ public class ChatServiceImpl implements ChatService {
 
 
     @Override
+    @Transactional
     public Chat addUserToGroup(UUID userId, UUID chatId) throws UserException {
         try {
             log.info("Adding user with ID {} to group chat with ID: {}", userId, chatId);
@@ -185,6 +193,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    @Transactional
     public Chat renameGroup(UUID chatId, String groupName, UUID reqUserId) throws UserException {
         try {
             log.info("Renaming group chat with ID: {} to: {} by user with ID: {}", chatId, groupName, reqUserId);
@@ -207,6 +216,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    @Transactional
     public Chat removeFromGroup(UUID chatId, UUID userId, UUID reqUserId) throws UserException {
         try {
             log.info("Removing user with ID {} from group chat with ID: {} by user with ID: {}", userId, chatId, reqUserId);
@@ -230,6 +240,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ChatSummaryDTO> getChatSummaries(UUID userId, int page, int size) throws ChatException {
         try {
             log.info("Getting chat summaries for user with ID: {}", userId);
@@ -280,5 +291,4 @@ public class ChatServiceImpl implements ChatService {
             throw new ChatException("Error getting chat summaries for user with ID: " + userId + ". " + e.getMessage());
         }
     }
-
 }

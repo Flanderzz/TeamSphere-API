@@ -6,6 +6,11 @@ import com.YipYapTimeAPI.YipYapTimeAPI.exception.UserException;
 import com.YipYapTimeAPI.YipYapTimeAPI.models.User;
 import com.YipYapTimeAPI.YipYapTimeAPI.request.UpdateUserRequest;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,11 +34,27 @@ public class UserController {
     private final UserService userService;
 
     private final UserDTOMapper userDTOMapper;
-    public UserController(UserService userService, UserDTOMapper  userDTOMapper) {
+    public UserController(UserService userService,
+                          UserDTOMapper  userDTOMapper) {
         this.userService = userService;
         this.userDTOMapper = userDTOMapper;
     }
 
+    @Operation(summary = "Update user details", description = "Updates the details of a user identified by the given user ID.")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "User updated successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    implementation = UserDTO.class
+                            )
+                    )
+            ),
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @PutMapping("/update/{userId}")
     public ResponseEntity<UserDTO> updateUserHandler(@RequestBody UpdateUserRequest req, @PathVariable UUID userId) throws UserException {
         try {
@@ -51,6 +72,21 @@ public class UserController {
         }
     }
 
+    @Operation(summary = "Get user profile", description = "Fetches the profile of the currently authenticated user.")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "202",
+                    description = "User profile retrieved successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    implementation = UserDTO.class
+                            )
+                    )
+            ),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @GetMapping("/profile")
     public ResponseEntity<UserDTO> getUserProfileHandler(@RequestHeader("Authorization") String jwt) {
         try {
@@ -71,6 +107,21 @@ public class UserController {
         }
     }
 
+    @Operation(summary = "Search users by name", description = "Searches for users whose names match the provided query.")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "202",
+                    description = "Search completed successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    implementation = HashSet.class
+                            )
+                    )
+            ),
+            @ApiResponse(responseCode = "400", description = "Invalid request"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @GetMapping("/search")
     public ResponseEntity<HashSet<UserDTO>> searchUsersByName(@RequestParam("name") String name) {
         try {

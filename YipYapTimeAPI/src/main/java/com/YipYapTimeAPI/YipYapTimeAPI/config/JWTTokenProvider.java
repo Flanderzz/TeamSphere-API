@@ -24,7 +24,8 @@ public class JWTTokenProvider {
     SecretKey key = Keys.hmacShaKeyFor(JWTTokenConst.JWT_KEY.getBytes());
 
     public String generateJwtToken(Authentication authentication) {
-        String jwt=Jwts.builder().setIssuer("YipYapTime")
+        String jwt = Jwts.builder()
+                .setIssuer("Teamsphere.co")
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(new Date().getTime()+86400000))
                 .claim("email", authentication.getName())
