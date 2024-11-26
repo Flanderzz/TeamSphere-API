@@ -55,7 +55,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Transactional
     public AuthResponse signupUser(String email, String password, String username, MultipartFile imageFile) throws UserException {
         try {
-            if (!isValidEmail(email)) {
+            if (isEmailInvalid(email)) {
                 log.warn("Bad Email={} was passed in", email);
                 throw new UserException("Valid email was not passed in");
             }
@@ -110,14 +110,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     @Transactional
-    public AuthResponse loginUser(String username, String password) throws UserException {
+    public AuthResponse loginUser(String email, String password) throws UserException {
         try {
-            if(!isValidEmail(username)){
-                log.warn("Email={} is already used with another account", username);
+            if(isEmailInvalid(email)){
+                log.warn("Email={} is already used with another account", email);
                 throw new UserException("Email is already used with another account");
             }
 
-            Authentication authentication = authentication(username, password);
+            Authentication authentication = authentication(email, password);
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
@@ -125,7 +125,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
             return new AuthResponse(token, true);
         } catch (BadCredentialsException e) {
-            log.warn("Authentication failed for user with username: {}", username);
+            log.warn("Authentication failed for user with username: {}", email);
             throw new UserException("Invalid username or password.");
         } catch (Exception e) {
             log.error("Unexpected error during login process", e);
@@ -133,13 +133,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
     }
 
-    public static boolean isValidEmail(String email) {
+    public static boolean isEmailInvalid(String email) {
         if (email.isEmpty())
-            return false;
+            return true;
 
         String emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
 
-        return Pattern.compile(emailRegex).matcher(email).matches();
+        return !Pattern.compile(emailRegex).matcher(email).matches();
     }
 
     private Authentication authentication(String email, String password) {
