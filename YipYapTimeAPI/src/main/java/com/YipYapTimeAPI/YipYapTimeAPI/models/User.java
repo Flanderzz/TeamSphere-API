@@ -1,15 +1,12 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.models;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
 

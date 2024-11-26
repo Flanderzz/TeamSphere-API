@@ -20,7 +20,7 @@ public class GlobalException {
 
         ErrorDetail error = new ErrorDetail(userException.getMessage(), req.getDescription(false), LocalDateTime.now());
 
-        return new ResponseEntity<ErrorDetail>(error, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(MessageException.class)
@@ -28,7 +28,7 @@ public class GlobalException {
 
         ErrorDetail error = new ErrorDetail(messageException.getMessage(), req.getDescription(false), LocalDateTime.now());
 
-        return new ResponseEntity<ErrorDetail>(error, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -38,7 +38,7 @@ public class GlobalException {
 
         ErrorDetail err =new ErrorDetail("Validation Error", error ,LocalDateTime.now());
 
-        return new ResponseEntity<ErrorDetail>(err, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(err, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(NoHandlerFoundException.class)
@@ -52,7 +52,7 @@ public class GlobalException {
 
         ErrorDetail error = new ErrorDetail(e.getMessage(), req.getDescription(false), LocalDateTime.now());
 
-        return new ResponseEntity<ErrorDetail>(error, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
 }
