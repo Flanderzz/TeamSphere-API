@@ -98,7 +98,7 @@ public class AuthController {
     public ResponseEntity<AuthResponse> userSignupMethod (
             @Schema(description = "User details", implementation = SignupRequest.class)
             @Valid @ModelAttribute SignupRequest request,
-            @RequestParam("file") MultipartFile file) throws UserException {
+            @RequestParam("file") MultipartFile file) throws UserException, ProfileImageException {
         try {
             log.info("Processing signup request for user with email: {}, username:{}", request.getEmail(), request.getUsername());
 

@@ -19,7 +19,7 @@ public class GlobalException {
     public ResponseEntity<ErrorDetail> ProfileImageExceptionHandler(ProfileImageException profileImageException, WebRequest req){
         var error = new ErrorDetail(profileImageException.getMessage(), req.getDescription(false), LocalDateTime.now().atOffset(ZoneOffset.UTC));
 
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(error, HttpStatus.UNSUPPORTED_MEDIA_TYPE);
     }
 
 
