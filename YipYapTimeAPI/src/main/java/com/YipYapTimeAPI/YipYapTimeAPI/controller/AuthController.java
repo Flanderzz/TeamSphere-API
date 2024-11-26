@@ -5,10 +5,9 @@ import com.YipYapTimeAPI.YipYapTimeAPI.exception.UserException;
 import com.YipYapTimeAPI.YipYapTimeAPI.models.User;
 import com.YipYapTimeAPI.YipYapTimeAPI.repository.UserRepository;
 import com.YipYapTimeAPI.YipYapTimeAPI.request.LoginRequest;
-import com.YipYapTimeAPI.YipYapTimeAPI.request.SigninRequest;
+import com.YipYapTimeAPI.YipYapTimeAPI.request.SignupRequest;
 import com.YipYapTimeAPI.YipYapTimeAPI.response.AuthResponse;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.AuthenticationService;
-import com.YipYapTimeAPI.YipYapTimeAPI.services.impl.CustomUserDetailsService;
 import com.YipYapTimeAPI.YipYapTimeAPI.utils.GoogleAuthRequest;
 import com.YipYapTimeAPI.YipYapTimeAPI.utils.GoogleUserInfo;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,8 +27,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -63,9 +62,11 @@ public class AuthController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200"
-//                    description = "Token is valid"
             ),
-            @ApiResponse(responseCode = "401", description = "Token is invalid or not provided")
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Token is invalid or not provided"
+            )
     })
     @GetMapping("/verify")
     public ResponseEntity<String> verifyJwtToken() {
@@ -94,8 +95,8 @@ public class AuthController {
     })
     @PostMapping(value="/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<AuthResponse> userSignupMethod (
-            @Schema(description = "User details", implementation = SigninRequest.class)
-            @Valid @ModelAttribute SigninRequest request,
+            @Schema(description = "User details", implementation = SignupRequest.class)
+            @Valid @ModelAttribute SignupRequest request,
             @RequestParam("file") MultipartFile file) throws UserException {
         try {
             log.info("Processing signup request for user with email: {}, username:{}", request.getEmail(), request.getUsername());
@@ -146,6 +147,8 @@ public class AuthController {
             throw new UserException("Unexpected error during login process.");
         }
     }
+
+    @Transactional // move business logic to service layer
     @Operation(summary = "Authenticate via Google", description = "login/signup via Google OAuth.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -159,10 +162,11 @@ public class AuthController {
     })
     @PostMapping("/google")
     public ResponseEntity<AuthResponse> authenticateWithGoogleMethod(
-            @RequestPart("googleUser") @Schema(
+            @Schema(
                     description = "Google OAuth request body",
                     implementation = GoogleAuthRequest.class
             )
+            @RequestPart("googleUser")
             @RequestBody GoogleAuthRequest request) {
         try {
             log.info("Processing Google authentication request");
@@ -175,14 +179,12 @@ public class AuthController {
 
             // Check if user exists
             Optional<User> optionalUser = userRepository.findByEmail(email);
-            User user;
             if (optionalUser.isPresent()) {
-                user = optionalUser.get(); // User found, retrieve the existing user
-                log.info("Existing user found with userId: {}", user.getId());
+                log.info("Existing user found with userId: {}", optionalUser.get().getId());
             } else {
                 // Register a new user if not exists
                 var currentDateTime = LocalDateTime.now().atOffset(ZoneOffset.UTC);
-                user = User.builder()
+                var user = User.builder()
                         .email(email)
                         .username(username)
                         .password(passwordEncoder.encode(UUID.randomUUID().toString())) // consider adding this cause a userpass field should NEVER be null
