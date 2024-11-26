@@ -1,6 +1,7 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.controller;
 
 import com.YipYapTimeAPI.YipYapTimeAPI.config.JWTTokenProvider;
+import com.YipYapTimeAPI.YipYapTimeAPI.exception.ProfileImageException;
 import com.YipYapTimeAPI.YipYapTimeAPI.exception.UserException;
 import com.YipYapTimeAPI.YipYapTimeAPI.models.User;
 import com.YipYapTimeAPI.YipYapTimeAPI.repository.UserRepository;
@@ -109,6 +110,9 @@ public class AuthController {
         } catch (UserException e) {
             log.error("Error during signup process", e);
             throw e; // Rethrow specific exception to be handled by global exception handler
+        } catch (ProfileImageException e){
+            log.warn("File type not accepted, {}", file.getContentType());
+            throw new ProfileImageException("Profile Picture type is not allowed!");
         } catch (Exception e) {
             log.error("Unexpected error during signup process", e);
             throw new UserException("Unexpected error during signup process");

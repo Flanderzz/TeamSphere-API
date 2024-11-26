@@ -1,6 +1,7 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.services.impl;
 
 import com.YipYapTimeAPI.YipYapTimeAPI.config.JWTTokenProvider;
+import com.YipYapTimeAPI.YipYapTimeAPI.exception.ProfileImageException;
 import com.YipYapTimeAPI.YipYapTimeAPI.exception.UserException;
 import com.YipYapTimeAPI.YipYapTimeAPI.models.User;
 import com.YipYapTimeAPI.YipYapTimeAPI.repository.UserRepository;
@@ -22,7 +23,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 @Service
@@ -53,7 +53,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     @Transactional
-    public AuthResponse signupUser(String email, String password, String username, MultipartFile imageFile) throws UserException {
+    public AuthResponse signupUser(String email, String password, String username, MultipartFile imageFile) throws UserException, ProfileImageException {
         try {
             if (isEmailInvalid(email)) {
                 log.warn("Bad Email={} was passed in", email);
@@ -69,6 +69,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             if (userRepository.findByUsername(username).isPresent()) {
                 log.warn("Username={} is already used with another account", username);
                 throw new UserException("Username is already used with another account");
+            }
+
+            if (!imageFile.isEmpty() || !imageFile.getContentType().equals("image/jpeg") || !imageFile.getContentType().equals("image/png")){
+                log.warn("File type not accepted, {}", imageFile.getContentType());
+                throw new ProfileImageException("Profile Picture type is not allowed!");
             }
 
             // Upload profile picture to Cloudflare
@@ -101,6 +106,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             // TODO: think about returning a response and not throwing an error in a catch block
             log.error("Error during signup process", e);
             throw e; // Rethrow specific exception to be handled by global exception handler
+        }
+        catch (ProfileImageException e){
+            log.error("ERROR: {}", e.getMessage());
+            throw new ProfileImageException(e.getMessage());
         }
         catch (Exception e) {
             log.error("Unexpected error during signup process", e);

@@ -15,6 +15,13 @@ import java.util.Objects;
 @RestControllerAdvice
 public class GlobalException {
     // TODO: think out and add more errors (too lazy atm)
+    @ExceptionHandler(ProfileImageException.class)
+    public ResponseEntity<ErrorDetail> ProfileImageExceptionHandler(ProfileImageException profileImageException, WebRequest req){
+        var error = new ErrorDetail(profileImageException.getMessage(), req.getDescription(false), LocalDateTime.now().atOffset(ZoneOffset.UTC));
+
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
 
     @ExceptionHandler(UserException.class)
     public ResponseEntity<ErrorDetail> UserExceptionHandler(UserException userException, WebRequest req){
