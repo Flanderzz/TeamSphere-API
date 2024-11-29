@@ -1,3 +1,9 @@
+jwt:
+  public:
+    key: classpath:public.key
+  private:
+    key: classpath:private.key
+  audience: "localhost:3000"
 cloudflare:
   api:
     accountID: ''
@@ -25,6 +31,9 @@ spring:
     multipart:
       max-file-size: 20MB
       max-request-size: 20MB
+  application.name: TeamSphere
+
+
 app:
   environment:
     ALLOWED_ORIGINS:
