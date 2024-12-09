@@ -1,8 +1,8 @@
 jwt:
   public:
-    key: classpath:public.key
+    key: classpath:public.pem
   private:
-    key: classpath:private.key
+    key: classpath:private.pem
   audience: "localhost:3000"
 cloudflare:
   api:

@@ -1,8 +1,5 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.config;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -15,12 +12,15 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
 @Configuration
 public class RSAConfig {
 
     @Bean
     public PrivateKey privateKey() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-        InputStream inputStream = getClass().getClassLoader().getResourceAsStream("private.key");
+        InputStream inputStream = getClass().getClassLoader().getResourceAsStream("private.pem");
 
         if(inputStream == null){
             throw new IllegalStateException("Private Key Could Not Be Found!");
@@ -45,7 +45,7 @@ public class RSAConfig {
 
     @Bean
     public PublicKey publicKey() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-        InputStream inputStream = getClass().getClassLoader().getResourceAsStream("public.key");
+        InputStream inputStream = getClass().getClassLoader().getResourceAsStream("public.pem");
 
         if(inputStream == null){
             throw new IllegalStateException("Public Key Could Not Be Found!");
