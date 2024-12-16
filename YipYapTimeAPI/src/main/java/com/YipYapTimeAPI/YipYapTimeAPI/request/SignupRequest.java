@@ -1,5 +1,8 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.request;
 
+import org.springframework.web.multipart.MultipartFile;
+
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,7 +13,15 @@ import lombok.Setter;
 @Getter
 @Setter
 public class SignupRequest {
-    private String username;
+    @NotNull
     private String email;
+
+    @NotNull
     private String password;
+
+    @NotNull
+    private String username;
+
+    @NotNull
+    private MultipartFile file;
 }
