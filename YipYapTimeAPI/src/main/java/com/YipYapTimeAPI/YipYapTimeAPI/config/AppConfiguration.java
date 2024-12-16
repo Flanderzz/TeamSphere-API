@@ -1,13 +1,13 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.config;
 
-
+import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.Collections;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -15,47 +15,37 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
-import jakarta.servlet.http.HttpServletRequest;
 
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
-
 
 @Configuration
 public class AppConfiguration {
     private final AppProperties appProperties;
 
-    public AppConfiguration(AppProperties appProperties) {
+    private final PublicKey publicKey;
+
+    private final JwtProperties jwtProperties;
+
+    public AppConfiguration(AppProperties appProperties,
+                            PublicKey publicKey,
+                            JwtProperties jwtProperties) {
         this.appProperties = appProperties;
+        this.publicKey = publicKey;
+        this.jwtProperties = jwtProperties;
     }
 
     @Bean
     public SecurityFilterChain securityAppConfig(HttpSecurity http) throws Exception {
-
-        http.sessionManagement().sessionCreationPolicy(STATELESS)
-                .and().authorizeHttpRequests(authorize -> authorize
+        http
+                .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
+                .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/**").authenticated()
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .anyRequest().permitAll()
                 )
-                .addFilterBefore(new JWTTokenValidator(), BasicAuthenticationFilter.class)
-                .csrf().disable().cors().configurationSource(new CorsConfigurationSource() {
-                    @Override
-                    public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
-
-                        CorsConfiguration cfg = new CorsConfiguration();
-
-                        cfg.setAllowedOrigins(appProperties.getAllowedOrigins());
-                        cfg.setAllowedMethods(Collections.singletonList("*"));
-                        cfg.setAllowCredentials(true);
-                        cfg.setAllowedHeaders(Collections.singletonList("*"));
-                        cfg.setExposedHeaders(Arrays.asList("Authorization"));
-                        cfg.setMaxAge(3600L);
-                        return cfg;
-
-                    }
-                }).and()
-                .formLogin()
-                .and()
-                .httpBasic();
+                .addFilterBefore(new JWTTokenValidator(publicKey, jwtProperties), BasicAuthenticationFilter.class)
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()));
 
         return http.build();
     }
@@ -65,4 +55,17 @@ public class AppConfiguration {
         return new BCryptPasswordEncoder();
     }
 
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        return request -> {
+            CorsConfiguration configuration = new CorsConfiguration();
+            configuration.setAllowedOrigins(appProperties.getAllowedOrigins());
+            configuration.setAllowedMethods(Collections.singletonList("*"));
+            configuration.setAllowCredentials(true);
+            configuration.setAllowedHeaders(Collections.singletonList("*"));
+            configuration.setExposedHeaders(Arrays.asList("Authorization"));
+            configuration.setMaxAge(3600L);
+            return configuration;
+        };
+    }
 }

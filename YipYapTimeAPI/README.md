@@ -36,7 +36,7 @@ Features
 ### Prerequisites
 Before you begin, ensure you have the following installed on your system:
 
-- Java 11 or higher
+- Java 17 or higher
 - Maven
 - Docker and Docker Compose
 - MySQL
@@ -54,8 +54,31 @@ Before you begin, ensure you have the following installed on your system:
     mvn clean install
     ```
 ### Configuration
-1. Update `application-local.yml` with your own values for the cloudflare section here is a link on how to get started with [cloudflare images.](https://developers.cloudflare.com/images/get-started/)
+1. Generate RSA Token in resource folder
+
+# create key pair
+```bash
+openssl genrsa -out keypair.pem {your size here}
+```
+
+# extract public key
+```bash
+openssl rsa -in keypair.pem -pubout -out public.pem
+```
+
+# extract private key
+```bash
+openssl pkcs8 -in keypair.pem -topk8 -nocrypt -inform PEM -outform PEM -out private.pem
+```
+
+2. Update `application-local.yml` with your own values for the cloudflare section here is a link on how to get started with [cloudflare images.](https://developers.cloudflare.com/images/get-started/)
     ```yaml
+  jwt:
+    public:
+      key: classpath:public.key
+    private:
+      key: classpath:private.key
+  audience: "your audience here"
     cloudflare:
       api:
         accountID: get-this-from-cloudflare
@@ -65,8 +88,8 @@ Before you begin, ensure you have the following installed on your system:
     spring:
       datasource:
         driver-class-name: com.mysql.cj.jdbc.Driver
-        password: my-secret-pw
         url: jdbc:mysql://local:3306/teamsphere_db
+        password: my-secret-pw
         username: root
       jpa:
         database: mysql
@@ -107,6 +130,7 @@ Before you begin, ensure you have the following installed on your system:
           - "61613:61613"
           - "15672:15672"
     ```
+
    ## M-Chip MAC users 
     If you are on mac with M silicone then you need to update the image in the docker file to
     ```FROM arm64v8/eclipse-temurin:17 as build```

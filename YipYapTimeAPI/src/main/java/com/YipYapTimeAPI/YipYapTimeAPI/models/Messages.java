@@ -23,11 +23,16 @@ public class Messages {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+
     private String content;
+
     private LocalDateTime timeStamp;
+
     private Boolean isRead;
+
     @ManyToOne
     private User username;
+
     @ManyToOne
     private Chat chat;
 

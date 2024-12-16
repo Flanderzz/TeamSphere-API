@@ -2,7 +2,6 @@ package com.YipYapTimeAPI.YipYapTimeAPI.config;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,6 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.security.PrivateKey;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -22,9 +22,13 @@ public class JWTTokenProviderTest {
 
     private JWTTokenProvider jwtTokenProvider;
 
+    private PrivateKey privateKey;
+
+    private JwtProperties jwtProperties;
+
     @BeforeEach
     public void setUp() {
-        jwtTokenProvider = new JWTTokenProvider();
+        jwtTokenProvider = new JWTTokenProvider(privateKey, jwtProperties);
     }
 
     @Test
@@ -36,8 +40,11 @@ public class JWTTokenProviderTest {
         String token = jwtTokenProvider.generateJwtToken(authentication);
 
         // Validate token
-        Claims claims = Jwts.parserBuilder().setSigningKey(Keys.hmacShaKeyFor(JWTTokenConst.JWT_KEY.getBytes()))
-                .build().parseClaimsJws(token).getBody();
+        Claims claims= Jwts.parserBuilder()
+                .setSigningKey(privateKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
         assertEquals("test@example.com", claims.get("email"));
     }
 

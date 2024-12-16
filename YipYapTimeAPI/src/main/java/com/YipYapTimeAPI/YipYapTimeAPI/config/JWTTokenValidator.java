@@ -1,13 +1,12 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.config;
+import java.security.PublicKey;
 import java.util.List;
 import java.io.IOException;
 
-import javax.crypto.SecretKey;
-
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -17,7 +16,6 @@ import org.springframework.security.core.GrantedAuthority;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,14 +23,21 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @Slf4j
 public class JWTTokenValidator extends OncePerRequestFilter {
+    private final PublicKey publicKey;
 
-    private final SecretKey key = Keys.hmacShaKeyFor(JWTTokenConst.JWT_KEY.getBytes());
+    private final JwtProperties jwtProperties;
 
+    public JWTTokenValidator(PublicKey publicKey, JwtProperties jwtProperties) {
+        this.publicKey = publicKey;
+        this.jwtProperties = jwtProperties;
+    }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
-        
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            @NotNull HttpServletResponse response,
+            @NotNull FilterChain filterChain
+    ) throws ServletException, IOException {
         String jwt =request.getHeader(JWTTokenConst.HEADER);
 
         if (jwt != null && jwt.startsWith("Bearer ")) {
@@ -42,17 +47,22 @@ public class JWTTokenValidator extends OncePerRequestFilter {
                 jwt = jwt.substring(7);
 
                 Claims claim = Jwts.parserBuilder()
-                        .setSigningKey(key)
+                        .setSigningKey(publicKey)
                         .build()
                         .parseClaimsJws(jwt)
                         .getBody();
+
+                String audience = claim.getAudience();
+                if (!jwtProperties.getAudience().equals(audience)) {
+                    throw new JwtException("Invalid audience: " + audience);
+                }
 
                 String username = claim.getSubject();
                 String authorities = claim.get("authorities", String.class);
 
                 List<GrantedAuthority> auths = AuthorityUtils.commaSeparatedStringToAuthorityList(authorities);
 
-                Authentication auth=new UsernamePasswordAuthenticationToken(username, null,auths);
+                Authentication auth = new UsernamePasswordAuthenticationToken(username, null ,auths);
 
                 SecurityContextHolder.getContext().setAuthentication(auth);
             } catch (ExpiredJwtException e) {
