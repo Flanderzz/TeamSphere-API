@@ -28,7 +28,8 @@ public class User {
     @Column(unique = true)
     private String email;
 
-    // In an ideal world, this should be unique? but i dont think it matters ngl
+    private String phoneNumber;
+
     private String profilePicture;
 
     @Column(nullable = false)

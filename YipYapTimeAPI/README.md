@@ -36,7 +36,7 @@ Features
 ### Prerequisites
 Before you begin, ensure you have the following installed on your system:
 
-- Java 21 or higher
+- Java 17 or higher
 - Maven
 - Docker and Docker Compose
 - MySQL

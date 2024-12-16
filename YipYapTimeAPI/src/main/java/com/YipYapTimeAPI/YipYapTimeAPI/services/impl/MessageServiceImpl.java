@@ -1,5 +1,13 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.services.impl;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.YipYapTimeAPI.YipYapTimeAPI.exception.ChatException;
 import com.YipYapTimeAPI.YipYapTimeAPI.exception.MessageException;
 import com.YipYapTimeAPI.YipYapTimeAPI.exception.UserException;
@@ -11,18 +19,10 @@ import com.YipYapTimeAPI.YipYapTimeAPI.request.SendMessageRequest;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.ChatService;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.MessageService;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.UserService;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.annotation.Validated;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
-@Validated
 @Slf4j
 public class MessageServiceImpl implements MessageService {
     private final MessageRepository messageRepo;
