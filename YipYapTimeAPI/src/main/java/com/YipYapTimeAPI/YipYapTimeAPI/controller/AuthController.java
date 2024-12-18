@@ -97,12 +97,11 @@ public class AuthController {
     @PostMapping(value="/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<AuthResponse> userSignupMethod (
             @Schema(description = "User details", implementation = SignupRequest.class)
-            @Valid @ModelAttribute SignupRequest request,
-            @RequestParam("file") MultipartFile file) throws UserException, ProfileImageException {
+            @Valid @ModelAttribute SignupRequest request) throws UserException, ProfileImageException {
         try {
             log.info("Processing signup request for user with email: {}, username:{}", request.getEmail(), request.getUsername());
 
-            AuthResponse authResponse = authenticationService.signupUser(request.getEmail(), request.getPassword(), request.getUsername(), file);
+            AuthResponse authResponse = authenticationService.signupUser(request);
 
             log.info("Signup process completed successfully for user with email: {}", request.getEmail());
 
@@ -111,7 +110,7 @@ public class AuthController {
             log.error("Error during signup process", e);
             throw e; // Rethrow specific exception to be handled by global exception handler
         } catch (ProfileImageException e){
-            log.warn("File type not accepted, {}", file.getContentType());
+            log.warn("File type not accepted, {}", request.getFile().getContentType());
             throw new ProfileImageException("Profile Picture type is not allowed!");
         } catch (Exception e) {
             log.error("Unexpected error during signup process", e);
