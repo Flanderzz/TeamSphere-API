@@ -1,15 +1,10 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.services.impl;
 
-import com.YipYapTimeAPI.YipYapTimeAPI.config.JWTTokenProvider;
-import com.YipYapTimeAPI.YipYapTimeAPI.exception.ProfileImageException;
-import com.YipYapTimeAPI.YipYapTimeAPI.exception.UserException;
-import com.YipYapTimeAPI.YipYapTimeAPI.models.User;
-import com.YipYapTimeAPI.YipYapTimeAPI.repository.UserRepository;
-import com.YipYapTimeAPI.YipYapTimeAPI.response.AuthResponse;
-import com.YipYapTimeAPI.YipYapTimeAPI.response.CloudflareApiResponse;
-import com.YipYapTimeAPI.YipYapTimeAPI.services.AuthenticationService;
-import com.YipYapTimeAPI.YipYapTimeAPI.services.CloudflareApiService;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Objects;
+import java.util.regex.Pattern;
+
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -21,10 +16,17 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.Objects;
-import java.util.regex.Pattern;
+import com.YipYapTimeAPI.YipYapTimeAPI.config.JWTTokenProvider;
+import com.YipYapTimeAPI.YipYapTimeAPI.exception.ProfileImageException;
+import com.YipYapTimeAPI.YipYapTimeAPI.exception.UserException;
+import com.YipYapTimeAPI.YipYapTimeAPI.models.User;
+import com.YipYapTimeAPI.YipYapTimeAPI.repository.UserRepository;
+import com.YipYapTimeAPI.YipYapTimeAPI.response.AuthResponse;
+import com.YipYapTimeAPI.YipYapTimeAPI.response.CloudflareApiResponse;
+import com.YipYapTimeAPI.YipYapTimeAPI.services.AuthenticationService;
+import com.YipYapTimeAPI.YipYapTimeAPI.services.CloudflareApiService;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Validated
@@ -72,7 +74,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 throw new UserException("Username is already used with another account");
             }
 
-            if (!imageFile.isEmpty() || !imageFile.getContentType().equals("image/jpeg") || !imageFile.getContentType().equals("image/png")){
+            if (imageFile.isEmpty() || (!imageFile.getContentType().equals("image/jpeg") && !imageFile.getContentType().equals("image/png"))) {
                 log.warn("File type not accepted, {}", imageFile.getContentType());
                 throw new ProfileImageException("Profile Picture type is not allowed!");
             }
@@ -80,7 +82,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             // Upload profile picture to Cloudflare
             CloudflareApiResponse responseEntity = cloudflareApiService.uploadImage(imageFile);
             String baseUrl = Objects.requireNonNull(responseEntity.getResult().getVariants().get(0));
-            String profileUrl = baseUrl.substring(0, baseUrl.lastIndexOf("/") + 1) + "chatProfilePicture";
+            String profileUrl = baseUrl.substring(0, baseUrl.lastIndexOf("/") + 1) + "public";
 
             var currentDateTime = LocalDateTime.now().atOffset(ZoneOffset.UTC);
 

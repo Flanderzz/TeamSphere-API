@@ -1,31 +1,34 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.controller;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.YipYapTimeAPI.YipYapTimeAPI.DTO.UserDTO;
 import com.YipYapTimeAPI.YipYapTimeAPI.DTOmapper.UserDTOMapper;
 import com.YipYapTimeAPI.YipYapTimeAPI.exception.UserException;
 import com.YipYapTimeAPI.YipYapTimeAPI.models.User;
 import com.YipYapTimeAPI.YipYapTimeAPI.request.UpdateUserRequest;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.UserService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/user")
@@ -55,8 +58,8 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "User not found"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PutMapping("/update/{userId}")
-    public ResponseEntity<UserDTO> updateUserHandler(@RequestBody UpdateUserRequest req, @PathVariable UUID userId) throws UserException {
+    @PutMapping(value = "/update/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<UserDTO> updateUserHandler(@ModelAttribute UpdateUserRequest req, @PathVariable UUID userId) throws UserException {
         try {
             log.info("Processing update user request for user with ID: {}", userId);
 

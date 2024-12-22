@@ -1,67 +1,104 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.services.impl;
 
-import com.YipYapTimeAPI.YipYapTimeAPI.config.JWTTokenProvider;
-import com.YipYapTimeAPI.YipYapTimeAPI.exception.UserException;
-import com.YipYapTimeAPI.YipYapTimeAPI.models.User;
-import com.YipYapTimeAPI.YipYapTimeAPI.repository.UserRepository;
-import com.YipYapTimeAPI.YipYapTimeAPI.request.UpdateUserRequest;
-import com.YipYapTimeAPI.YipYapTimeAPI.services.UserService;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.annotation.Validated;
-
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.YipYapTimeAPI.YipYapTimeAPI.config.JWTTokenProvider;
+import com.YipYapTimeAPI.YipYapTimeAPI.exception.ProfileImageException;
+import com.YipYapTimeAPI.YipYapTimeAPI.exception.UserException;
+import com.YipYapTimeAPI.YipYapTimeAPI.models.User;
+import com.YipYapTimeAPI.YipYapTimeAPI.repository.UserRepository;
+import com.YipYapTimeAPI.YipYapTimeAPI.request.UpdateUserRequest;
+import com.YipYapTimeAPI.YipYapTimeAPI.response.CloudflareApiResponse;
+import com.YipYapTimeAPI.YipYapTimeAPI.services.CloudflareApiService;
+import com.YipYapTimeAPI.YipYapTimeAPI.services.UserService;
+
+import lombok.extern.slf4j.Slf4j;
+
 @Service
-@Validated
 @Slf4j
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepo;
     private final JWTTokenProvider jwtTokenProvider;
+    private final CloudflareApiService cloudflareApiService;
 
-    public UserServiceImpl( UserRepository userRepo, JWTTokenProvider jwtTokenProvider) {
+    public UserServiceImpl( UserRepository userRepo, JWTTokenProvider jwtTokenProvider, CloudflareApiService cloudflareApiService) {
         this.userRepo = userRepo;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.cloudflareApiService = cloudflareApiService;
     }
 
     @Override
     @Transactional
-    public User updateUser(UUID userId, UpdateUserRequest req) throws UserException {
+    public User updateUser(UUID userId, UpdateUserRequest req) throws UserException, ProfileImageException {
+        try {
+            log.info("Attempting to update user with ID: {}", userId);
+            User user = findUserById(userId);
+    
+            if (user == null) {
+                log.error("User with ID= {}, not found. Unable to update.", userId);
+                throw new UserException("User not found");
+            }
+    
+            log.info("Found user for update: {}", user);
+    
+            if (req.getUsername() != null || !req.getUsername().isEmpty() || !req.getUsername().isBlank()) {
+                log.info("Updating username to: {}", req.getUsername());
+                user.setUsername(req.getUsername());
+            }
 
-        log.info("Attempting to update user with ID: {}", userId);
-        User user = findUserById(userId);
+            if (req.getProfile_picture() != null) {
+                log.info("Checking if profile picture is valid");
+                if (req.getProfile_picture().isEmpty() || (!req.getProfile_picture().getContentType().equals("image/jpeg") && !req.getProfile_picture().getContentType().equals("image/png"))) {
+                    log.warn("File type not accepted, {}", req.getProfile_picture().getContentType());
+                    throw new ProfileImageException("Profile Picture type is not allowed!");
+                }
 
-        if (user == null) {
-            log.error("User with ID= {}, not found. Unable to update.", userId);
-            throw new UserException("User not found");
+                log.info("Updating profile picture: {}", user.getProfilePicture());
+                var profileImg = user.getProfilePicture().split("/");
+                CloudflareApiResponse responseEntity = cloudflareApiService.deleteImage(profileImg[profileImg.length - 2]);
+                if (!responseEntity.isSuccess()) {
+                    log.warn("Error deleting profile picture from Cloudflare, ID: {}", profileImg[profileImg.length - 2]);
+                    throw new ProfileImageException("Error deleting profile picture from Cloudflare");
+                }
+
+                responseEntity = cloudflareApiService.uploadImage(req.getProfile_picture());
+                if (!responseEntity.isSuccess() || responseEntity == null || responseEntity.getResult() == null || responseEntity.getResult().getVariants() == null || responseEntity.getResult().getVariants().isEmpty()) {
+                    log.warn("Error uploading new profile picture to Cloudflare");
+                    throw new ProfileImageException("Error uploading new profile picture to Cloudflare");
+                }
+
+                String baseUrl = Objects.requireNonNull(responseEntity.getResult().getVariants().get(0));
+                String profileUrl = baseUrl.substring(0, baseUrl.lastIndexOf("/") + 1) + "public";
+                user.setProfilePicture(profileUrl);
+            }
+    
+            user.setLastUpdatedDate(LocalDateTime.now().atOffset(ZoneOffset.UTC));
+    
+            // Save the updated user
+            User updatedUser = userRepo.save(user);
+            log.info("User updated successfully. Updated user details: {}", updatedUser);
+    
+            return updatedUser;
         }
-
-        log.info("Found user for update: {}", user);
-
-        if (req.getUsername() != null) {
-            log.info("Updating username to: {}", req.getUsername());
-            user.setUsername(req.getUsername());
+        catch (ProfileImageException e) {
+            log.error("Error updating user profile image: {}", e.getMessage());
+            throw new UserException("Error updating user: " + e.getMessage());
         }
-        if (req.getProfile_picture() != null) {
-            log.info("Updating profile picture to: {}", req.getProfile_picture());
-            user.setProfilePicture(req.getProfile_picture());
+        catch (Exception e) {
+            log.error("Error updating user: {}", e.getMessage());
+            throw new UserException("Error updating user: " + e.getMessage());
         }
-
-        user.setLastUpdatedDate(LocalDateTime.now().atOffset(ZoneOffset.UTC));
-
-        // Save the updated user
-        User updatedUser = userRepo.save(user);
-        log.info("User updated successfully. Updated user details: {}", updatedUser);
-
-        return updatedUser;
     }
 
     @Override
