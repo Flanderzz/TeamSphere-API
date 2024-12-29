@@ -21,11 +21,13 @@ import com.YipYapTimeAPI.YipYapTimeAPI.exception.ProfileImageException;
 import com.YipYapTimeAPI.YipYapTimeAPI.exception.UserException;
 import com.YipYapTimeAPI.YipYapTimeAPI.models.User;
 import com.YipYapTimeAPI.YipYapTimeAPI.repository.UserRepository;
+import com.YipYapTimeAPI.YipYapTimeAPI.request.SignupRequest;
 import com.YipYapTimeAPI.YipYapTimeAPI.response.AuthResponse;
 import com.YipYapTimeAPI.YipYapTimeAPI.response.CloudflareApiResponse;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.AuthenticationService;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.CloudflareApiService;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -56,31 +58,31 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     @Transactional
-    public AuthResponse signupUser(String email, String password, String username, MultipartFile imageFile) throws UserException, ProfileImageException {
+    public AuthResponse signupUser(@Valid SignupRequest request) throws UserException, ProfileImageException {
         try {
-            if (isEmailInvalid(email)) {
-                log.warn("Bad Email={} was passed in", email);
+            if (isEmailInvalid(request.getEmail())) {
+                log.warn("Bad Email={} was passed in", request.getEmail());
                 throw new UserException("Valid email was not passed in");
             }
 
             // Check if user with the given email or username already exists
-            if (userRepository.findByEmail(email).isPresent()) {
-                log.warn("Email={} is already used with another account", email);
+            if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+                log.warn("Email={} is already used with another account", request.getEmail());
                 throw new UserException("Email is already used with another account");
             }
 
-            if (userRepository.findByUsername(username).isPresent()) {
-                log.warn("Username={} is already used with another account", username);
+            if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+                log.warn("Username={} is already used with another account", request.getUsername());
                 throw new UserException("Username is already used with another account");
             }
 
-            if (imageFile.isEmpty() || (!imageFile.getContentType().equals("image/jpeg") && !imageFile.getContentType().equals("image/png"))) {
-                log.warn("File type not accepted, {}", imageFile.getContentType());
+            if (request.getFile().isEmpty() || (!request.getFile().getContentType().equals("image/jpeg") && !request.getFile().getContentType().equals("image/png"))) {
+                log.warn("File type not accepted, {}", request.getFile().getContentType());
                 throw new ProfileImageException("Profile Picture type is not allowed!");
             }
 
             // Upload profile picture to Cloudflare
-            CloudflareApiResponse responseEntity = cloudflareApiService.uploadImage(imageFile);
+            CloudflareApiResponse responseEntity = cloudflareApiService.uploadImage(request.getFile());
             String baseUrl = Objects.requireNonNull(responseEntity.getResult().getVariants().get(0));
             String profileUrl = baseUrl.substring(0, baseUrl.lastIndexOf("/") + 1) + "public";
 
@@ -88,9 +90,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
             // Creating a new user
             var newUser = User.builder()
-                    .email(email)
-                    .username(username)
-                    .password(passwordEncoder.encode(password))
+                    .email(request.getEmail())
+                    .username(request.getUsername())
+                    .password(passwordEncoder.encode(request.getPassword()))
                     .profilePicture(profileUrl)
                     .createdDate(currentDateTime)
                     .lastUpdatedDate(currentDateTime)
@@ -99,7 +101,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             userRepository.save(newUser);
 
             // auto-login after signup
-            Authentication authentication = new UsernamePasswordAuthenticationToken(email, password);
+            Authentication authentication = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String token = jwtTokenProvider.generateJwtToken(authentication);
 
