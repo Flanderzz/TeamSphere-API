@@ -1,6 +1,6 @@
 package com.YipYapTimeAPI.YipYapTimeAPI.request;
 
-//TODO: add lombok annotations
+import org.springframework.web.multipart.MultipartFile;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,5 +13,5 @@ import lombok.Setter;
 @Setter
 public class UpdateUserRequest {
     private String username;
-    private String profile_picture;
+    private MultipartFile profile_picture;
 }

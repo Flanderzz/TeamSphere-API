@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.YipYapTimeAPI.YipYapTimeAPI.config.JWTTokenProvider;
@@ -20,16 +21,15 @@ import com.YipYapTimeAPI.YipYapTimeAPI.exception.ProfileImageException;
 import com.YipYapTimeAPI.YipYapTimeAPI.exception.UserException;
 import com.YipYapTimeAPI.YipYapTimeAPI.models.User;
 import com.YipYapTimeAPI.YipYapTimeAPI.repository.UserRepository;
-import com.YipYapTimeAPI.YipYapTimeAPI.request.SignupRequest;
 import com.YipYapTimeAPI.YipYapTimeAPI.response.AuthResponse;
 import com.YipYapTimeAPI.YipYapTimeAPI.response.CloudflareApiResponse;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.AuthenticationService;
 import com.YipYapTimeAPI.YipYapTimeAPI.services.CloudflareApiService;
 
-import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Validated
 @Slf4j
 public class AuthenticationServiceImpl implements AuthenticationService {
 
@@ -56,11 +56,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     @Transactional
-    public AuthResponse signupUser(@Valid SignupRequest request) throws UserException, ProfileImageException {
-        String email = request.getEmail();
-        String password = request.getPassword();
-        String username = request.getUsername();
-        MultipartFile imageFile = request.getFile();
+    public AuthResponse signupUser(String email, String password, String username, MultipartFile imageFile) throws UserException, ProfileImageException {
         try {
             if (isEmailInvalid(email)) {
                 log.warn("Bad Email={} was passed in", email);
@@ -78,19 +74,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 throw new UserException("Username is already used with another account");
             }
 
-            if (imageFile.isEmpty() || (!imageFile.getContentType().equals("image/jpeg") && !imageFile.getContentType().equals("image/png"))){
+            if (imageFile.isEmpty() || (!imageFile.getContentType().equals("image/jpeg") && !imageFile.getContentType().equals("image/png"))) {
                 log.warn("File type not accepted, {}", imageFile.getContentType());
                 throw new ProfileImageException("Profile Picture type is not allowed!");
             }
 
             // Upload profile picture to Cloudflare
             CloudflareApiResponse responseEntity = cloudflareApiService.uploadImage(imageFile);
-            if (!responseEntity.isSuccess() || responseEntity == null || responseEntity.getResult() == null || responseEntity.getResult().getVariants() == null || responseEntity.getResult().getVariants().isEmpty()) {
-                log.error("Error uploading profile picture to Cloudflare");
-                throw new ProfileImageException("Error uploading profile picture to Cloudflare");
-            }
             String baseUrl = Objects.requireNonNull(responseEntity.getResult().getVariants().get(0));
-            String profileUrl = baseUrl.substring(0, baseUrl.lastIndexOf("/") + 1) + "chatProfilePicture";
+            String profileUrl = baseUrl.substring(0, baseUrl.lastIndexOf("/") + 1) + "public";
 
             var currentDateTime = LocalDateTime.now().atOffset(ZoneOffset.UTC);
 
