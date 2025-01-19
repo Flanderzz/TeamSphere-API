@@ -57,7 +57,7 @@ jobs:
 
       - name: Debug Metadata Output
         run: |
-          echo "Labels: ${{ steps.metadata.outputs.labels }}"
+          echo "Labels: ${{ steps.metadata.outputs.labels. }}"
 
       - name: Save Image Version to Environment Variable
         id: set-version
@@ -70,7 +70,7 @@ jobs:
 
       - name: Use Image Version
         run: | 
-          echo "Using APP_VERSION: $APP_VERSION"
+          echo "Using APP_VERSION: $DOCKER_METADATA_OUTPUT_VERSION"
 
 
       -
