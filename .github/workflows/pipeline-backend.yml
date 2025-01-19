@@ -57,7 +57,8 @@ jobs:
 
       - name: Save Image Version to Environment Variable
         id: set-version
-        run: echo "APP_VERSION=${{ fromJson(steps.metadata.outputs.labels)['org.opencontainers.image.version'] }}" >> $GITHUB_ENV
+        run: |
+          echo "APP_VERSION=${{ fromJson(steps.metadata.outputs.labels)['org.opencontainers.image.version'] }}" >> $GITHUB_ENV
 
       - name: Use Image Version
         run: | 
