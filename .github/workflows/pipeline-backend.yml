@@ -102,6 +102,8 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             export IMAGE_VERSION=${{ needs.build.outputs.APP_VERSION }}
+            echo "Image version1: $IMAGE_VERSION"
             cd /home/teamsphere/projects/teamsphere-deployment
+            echo "Image version2: $IMAGE_VERSION"
             docker compose down
             docker compose up -d
