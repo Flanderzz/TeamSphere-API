@@ -57,7 +57,7 @@ jobs:
       -
         name: Echo Tags
         run: |
-          echo "Tags: ${{ steps.metadata.outputs.tags }}"
+          echo "Labels: ${{ steps.metadata.outputs.labels }}"
 
       -
         name: Login to DockerHub
@@ -71,19 +71,19 @@ jobs:
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and push
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          platforms: linux/amd64
-          tags: ${{ steps.metadata.outputs.tags }}
-          labels: ${{ steps.metadata.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          build-args: |
-            PROFILE=prod
-            APP_VERSION= ${{ steps.metadata.outputs.tags }}
+    #  - name: Build and push
+    #    uses: docker/build-push-action@v6
+    #    with:
+    #      context: .
+    #      push: true
+    #      platforms: linux/amd64
+    #      tags: ${{ steps.metadata.outputs.tags }}
+    #      labels: ${{ steps.metadata.outputs.labels }}
+    #      cache-from: type=gha
+    #      cache-to: type=gha,mode=max
+    #      build-args: |
+    #        PROFILE=prod
+    #        APP_VERSION= ${{ steps.metadata.outputs.tags }}
 
   deploy:
     name: Deploy Backend
