@@ -55,14 +55,23 @@ jobs:
             # For pull requests (PR-123)
             type=ref,event=pr
 
+      - name: Debug Metadata Output
+        run: |
+          echo "Labels: ${{ steps.metadata.outputs.labels }}"
+
       - name: Save Image Version to Environment Variable
         id: set-version
         run: |
-          echo "APP_VERSION=${{ fromJson(steps.metadata.outputs.labels)['org.opencontainers.image.version'] }}" >> $GITHUB_ENV
+          echo "Extracting APP_VERSION from labels..."
+          echo "APP_VERSION=$(echo '${{ steps.metadata.outputs.labels }}' | jq -r '.\"org.opencontainers.image.version\"')" >> $GITHUB_ENV
+        env:
+          # Ensure jq is installed
+          PATH: /usr/bin:/bin:/usr/sbin:/sbin
 
       - name: Use Image Version
         run: | 
           echo "Using APP_VERSION: $APP_VERSION"
+
 
       -
         name: Login to DockerHub
