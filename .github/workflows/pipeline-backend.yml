@@ -94,5 +94,6 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
+            echo "Docker metadata output version: $DOCKER_METADATA_OUTPUT_VERSION"
             export IMAGE_VERSION=$DOCKER_METADATA_OUTPUT_VERSION
-            echo "Image version: $IMAGE_VERSION
+            echo "Image version: $IMAGE_VERSION"
