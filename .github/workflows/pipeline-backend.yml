@@ -105,5 +105,6 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             echo "Docker metadata output version: $APP_VERSION"
-            export IMAGE_VERSION=$APP_VERSION
+            export IMAGE_VERSION=${{ needs.build.outputs.APP_VERSION }}
+            echo "Docker metadata output version: $IMAGE_VERSION"
             echo "Image version: $IMAGE_VERSION"
