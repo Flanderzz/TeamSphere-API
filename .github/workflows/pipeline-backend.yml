@@ -55,24 +55,6 @@ jobs:
             # For pull requests (PR-123)
             type=ref,event=pr
 
-      - name: Debug Metadata Output
-        run: |
-          echo "Labels: ${{ steps.metadata.outputs.labels}}"
-
-      - name: Save Image Version to Environment Variable
-        id: set-version
-        run: |
-          echo "Extracting APP_VERSION from labels..."
-          echo "APP_VERSION=$(echo '${{ steps.metadata.outputs.labels }}' | jq -r '.[\"org.opencontainers.image.version\"]')" >> $GITHUB_ENV
-        env:
-          # Ensure jq is installed
-          PATH: /usr/bin:/bin:/usr/sbin:/sbin
-
-      - name: Use Image Version
-        run: | 
-          echo "Using APP_VERSION: $DOCKER_METADATA_OUTPUT_VERSION"
-
-
       -
         name: Login to DockerHub
         if: github.event_name != 'pull_request'
@@ -104,7 +86,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build]
     steps:
-      - name: executing remote ssh commands using password
+      - name: executing remote ssh commands
         uses: appleboy/ssh-action@v1.1.0
         with:
           host: ${{ secrets.VPS_IP }}
@@ -112,5 +94,5 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            whoami
-            ls -al
+            export IMAGE_VERSION=$DOCKER_METADATA_OUTPUT_VERSION
+            echo "Image version: $IMAGE_VERSION
