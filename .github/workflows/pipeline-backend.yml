@@ -55,6 +55,10 @@ jobs:
             # For pull requests (PR-123)
             type=ref,event=pr
 
+
+      - name: Set Version
+        id: version-selector
+        run: echo "version=$DOCKER_METADATA_OUTPUT_VERSION" >> "$GITHUB_OUTPUT"
       -
         name: Login to DockerHub
         if: github.event_name != 'pull_request'
@@ -94,6 +98,6 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            echo "Docker metadata output version: $DOCKER_METADATA_OUTPUT_VERSION"
-            export IMAGE_VERSION=$DOCKER_METADATA_OUTPUT_VERSION
+            echo "Docker metadata output version: ${{ steps.version-selector.outputs.version }}"
+            export IMAGE_VERSION=${{ steps.version-selector.outputs.version }}
             echo "Image version: $IMAGE_VERSION"
