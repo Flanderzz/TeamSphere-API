@@ -54,10 +54,14 @@ jobs:
             
             # For pull requests (PR-123)
             type=ref,event=pr
-      -
-        name: Echo Tags
-        run: |
-          echo "Labels: ${{ steps.metadata.outputs.labels }}"
+
+      - name: Save Image Version to Environment Variable
+        id: set-version
+        run: echo "APP_VERSION=${{ fromJson(steps.metadata.outputs.labels)['org.opencontainers.image.version'] }}" >> $GITHUB_ENV
+
+      - name: Use Image Version
+        run: | 
+          echo "Using APP_VERSION: $APP_VERSION"
 
       -
         name: Login to DockerHub
