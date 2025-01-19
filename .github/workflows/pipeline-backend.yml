@@ -18,6 +18,9 @@ jobs:
       DOCKER_USERNAME: bravinr
       APP_NAME: teamsphere
 
+    outputs:
+      APP_VERSION: ${{steps.version-selector.outputs.version}}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -90,6 +93,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build]
     steps:
+      - env:
+          APP_VERSION: ${{needs.build.outputs.APP_VERSION}}
+        run: echo "$APP_VERSION"
       - name: executing remote ssh commands
         uses: appleboy/ssh-action@v1.1.0
         with:
@@ -98,6 +104,6 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            echo "Docker metadata output version: ${{ steps.version-selector.outputs.version }}"
-            export IMAGE_VERSION=${{ steps.version-selector.outputs.version }}
+            echo "Docker metadata output version: $APP_VERSION"
+            export IMAGE_VERSION=$APP_VERSION
             echo "Image version: $IMAGE_VERSION"
