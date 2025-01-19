@@ -63,7 +63,7 @@ jobs:
         id: set-version
         run: |
           echo "Extracting APP_VERSION from labels..."
-          echo "APP_VERSION=$(echo '${{ steps.metadata.outputs.labels }}' | jq -r '.\"org.opencontainers.image.version\"')" >> $GITHUB_ENV
+          echo "APP_VERSION=$(echo '${{ steps.metadata.outputs.labels }}' | jq -r '.[\"org.opencontainers.image.version\"]')" >> $GITHUB_ENV
         env:
           # Ensure jq is installed
           PATH: /usr/bin:/bin:/usr/sbin:/sbin
