@@ -76,6 +76,13 @@ jobs:
             export IMAGE_VERSION=${{ needs.build.outputs.APP_VERSION }}
             echo "Image version1: $IMAGE_VERSION"
             cd /home/teamsphere/projects/teamsphere-deployment
-            echo "Image version2: $IMAGE_VERSION"
+            
+            # Docker login
+            echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin            
+            
+            # Bring down the current containers
             docker compose down
+          
+            # Start the updated containers
             docker compose up -d
+
