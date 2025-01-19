@@ -62,6 +62,8 @@ jobs:
             
             # For pull requests (PR-123)
             type=ref,event=pr
+      - name: Echo Tags
+        run: echo "Tags: ${{ steps.metadata.outputs.tags }}"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
