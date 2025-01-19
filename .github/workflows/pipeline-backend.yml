@@ -57,7 +57,7 @@ jobs:
 
       - name: Debug Metadata Output
         run: |
-          echo "Labels: ${{ steps.metadata.outputs.labels. }}"
+          echo "Labels: ${{ steps.metadata.outputs.labels}}"
 
       - name: Save Image Version to Environment Variable
         id: set-version
