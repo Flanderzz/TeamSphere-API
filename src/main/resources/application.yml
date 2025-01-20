@@ -1,5 +1,2 @@
 server:
   port: 5454
-spring:
-  profiles:
-    active: {SPRING_PROFILE}

@@ -59,6 +59,21 @@ jobs:
           password: '${{ secrets.DOCKERHUB_TOKEN }}'
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64
+          tags: ${{ steps.metadata.outputs.tags }}
+          labels: ${{ steps.metadata.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            PROFILE=prod
+            APP_VERSION=$DOCKER_METADATA_OUTPUT_VERSION      
+
   deploy:
     name: Deploy Backend
     runs-on: ubuntu-latest
@@ -67,6 +82,17 @@ jobs:
     steps:
       - name: executing remote ssh commands
         uses: appleboy/ssh-action@v1.1.0
+        env:
+          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+          MYSQL_USERNAME: ${{ secrets.MYSQL_USERNAME }}
+          MYSQL_USER_PASSWORD: ${{ secrets.MYSQL_USER_PASSWORD }}
+          RABBITMQ_USERNAME: ${{ secrets.RABBITMQ_USERNAME }}
+          RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
+          ALLOWED_ORIGIN: ${{ secrets.ALLOWED_ORIGIN }}
+          CLOUDFLARE_ACCOUNTID: ${{ secrets.CLOUDFLARE_ACCOUNTID }}
+          CLOUDFLARE_KEY: ${{ secrets.CLOUDFLARE_KEY }}
+
         with:
           host: '${{ secrets.VPS_IP }}'
           username: '${{ secrets.VPS_USERNAME }}'
@@ -82,6 +108,8 @@ jobs:
             
             # Bring down the current containers
             docker compose down
+
+            docker compose pull
           
             # Start the updated containers
             docker compose up -d

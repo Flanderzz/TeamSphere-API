@@ -1,7 +1,9 @@
 services:
   spring-app:
-    image: teamsphere-backend:0.0.1
+    image: bravinr/teamsphere:${IMAGE_VERSION}
     restart: unless-stopped
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
     depends_on:
       - mysql
       - rabbitmq
