@@ -71,7 +71,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            PROFILE=prod
             APP_VERSION=$DOCKER_METADATA_OUTPUT_VERSION      
 
   deploy:
@@ -92,12 +91,12 @@ jobs:
           ALLOWED_ORIGIN: ${{ secrets.ALLOWED_ORIGIN }}
           CLOUDFLARE_ACCOUNTID: ${{ secrets.CLOUDFLARE_ACCOUNTID }}
           CLOUDFLARE_KEY: ${{ secrets.CLOUDFLARE_KEY }}
-
         with:
           host: '${{ secrets.VPS_IP }}'
           username: '${{ secrets.VPS_USERNAME }}'
           key: '${{ secrets.SSH_PRIVATE_KEY }}'
           port: '${{ secrets.SSH_PORT }}'
+          envs: MYSQL_ROOT_PASSWORD,MYSQL_DATABASE,MYSQL_USERNAME,MYSQL_USER_PASSWORD,RABBITMQ_USERNAME,RABBITMQ_PASSWORD,ALLOWED_ORIGIN,CLOUDFLARE_ACCOUNTID,CLOUDFLARE_KEY
           script: |
             export IMAGE_VERSION=${{ needs.build.outputs.APP_VERSION }}
             echo "Image version1: $IMAGE_VERSION"

@@ -17,11 +17,10 @@ FROM eclipse-temurin:17-jdk-alpine
 VOLUME /tmp
 
 # Environment variables
-ENV ACTIVE_PROFILE=${PROFILE}
-ENV JAR_VERSION=${APP_VERSION}
+ENV JAR_VERSION=teamsphere-backend
 
 # Copy the JAR file with version
 COPY --from=build /workspace/app/target/*.jar ${JAR_VERSION}.jar
 
 # Run the jar file with version
-CMD ["sh", "-c", "java -Dspring.profiles.active=${ACTIVE_PROFILE} -jar ${JAR_VERSION}.jar"]
+CMD ["sh", "-c", "java  -jar ${JAR_VERSION}.jar"]
