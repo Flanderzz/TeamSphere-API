@@ -40,6 +40,7 @@ public class JWTTokenProvider {
                 .setNotBefore(currentDate)
                 .setExpiration(new Date(currentDate.getTime()+86400000))
                 .claim("email", authentication.getName())
+                .claim("authorities", "ROLE_USER")
                 .signWith(privateKey, SignatureAlgorithm.RS256)
                 .compact();
     }
