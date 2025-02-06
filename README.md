@@ -56,18 +56,18 @@ Before you begin, ensure you have the following installed on your system:
 ### Configuration
 1. Generate RSA Token in resource folder
 
-### create key pair
+### Create key pair
 Keys smaller than 2048 bits are considered unsecure
 ```bash
 openssl genrsa -out keypair.pem {your size here}
 ```
 
-### extract public key
+### Extract public key
 ```bash
 openssl rsa -in keypair.pem -pubout -out public.pem
 ```
 
-### extract private key
+### Extract private key
 ```bash
 openssl pkcs8 -in keypair.pem -topk8 -nocrypt -inform PEM -outform PEM -out private.pem
 ```
