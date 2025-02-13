@@ -9,4 +9,6 @@ import org.springframework.stereotype.Component;
 @Data
 public class JwtProperties {
     private String audience;
+    private String publicKey;
+    private String privateKey;
 }

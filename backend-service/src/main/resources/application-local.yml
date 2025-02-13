@@ -1,45 +1,38 @@
 jwt:
-  public:
-    key: classpath:public.pem
-  private:
-    key: classpath:private.pem
+  publicKey: ${public-key}
+  privateKey: ${private-key}
   audience: "localhost:3000"
 cloudflare:
   api:
-    accountID: ''
-    key: ''
+    accountID: ${CLOUDFLARE_ACCOUNTID}
+    key: ${CLOUDFLARE_KEY}
 server:
   port: 5454
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    password: my-secret-pw
-    url: jdbc:mysql://localhost:3306/teamsphere_db
-    username: root
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_USER_PASSWORD}
+    url: jdbc:mysql://localhost:3306/${MYSQL_DATABASE}
   jpa:
     database: mysql
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     show-sql: true
   rabbitmq:
     host: localhost
-    password: guest
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
     port: 61613
     requested-heartbeat: 580
-    username: guest
   servlet:
     multipart:
       max-file-size: 20MB
       max-request-size: 20MB
   application.name: TeamSphere
 
-
 app:
   environment:
     ALLOWED_ORIGINS:
       - http://localhost:3000
       - http://localhost:4173
-
-google:
-  client-id:
-  client-secret:
