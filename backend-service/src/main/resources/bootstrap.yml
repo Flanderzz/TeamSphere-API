@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: backend-service
+  cloud:
+    vault:
+      uri: ${VAULT_ADDR:https://dev.vault.teamsphere.co}
+      authentication: APPROLE
+      app-role:
+        role-id: e4401958-3ace-6f9c-b905-caed23d030d8
+        secret-id: short-lived-secret
+      kv:
+        enabled: true
+        backend: secret
+      fail-fast: true
