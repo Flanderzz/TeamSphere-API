@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: co.teamsphere.api.config.JWTTokenProviderTest
+-------------------------------------------------------------------------------
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 31.51 s -- in co.teamsphere.api.config.JWTTokenProviderTest

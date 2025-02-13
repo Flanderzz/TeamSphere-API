@@ -1,0 +1,7 @@
+co\teamsphere\api\DTOmapper\ChatDTOMapperTest.class
+co\teamsphere\api\config\JWTTokenProviderTest.class
+co\teamsphere\api\config\JWTTokenValidatorTest.class
+co\teamsphere\api\ApplicationTests.class
+co\teamsphere\api\DTOmapper\MessageDTOMapperTest.class
+co\teamsphere\api\DTOmapper\UserDTOMapperTest.class
+co\teamsphere\api\helpers\TestDataBuilder.class

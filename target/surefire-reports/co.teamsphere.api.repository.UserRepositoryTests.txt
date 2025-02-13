@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: co.teamsphere.api.repository.UserRepositoryTests
+-------------------------------------------------------------------------------
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 53.67 s -- in co.teamsphere.api.repository.UserRepositoryTests
