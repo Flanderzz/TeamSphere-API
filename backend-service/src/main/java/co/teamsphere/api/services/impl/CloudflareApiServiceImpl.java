@@ -1,10 +1,11 @@
 package co.teamsphere.api.services.impl;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
-
+import co.teamsphere.api.exception.CloudflareException;
+import co.teamsphere.api.response.CloudflareApiResponse;
+import co.teamsphere.api.services.CloudflareApiService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpEntity;
@@ -16,13 +17,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
-import co.teamsphere.api.response.CloudflareApiResponse;
-import co.teamsphere.api.services.CloudflareApiService;
-
-import lombok.extern.slf4j.Slf4j;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -45,38 +46,54 @@ public class CloudflareApiServiceImpl implements CloudflareApiService {
         headers.set("Authorization", String.format("Bearer %s", cloudflareApiKey));
 
         var body = new LinkedMultiValueMap<String, Object>();
+        final String filename = UUID.randomUUID().toString();
 
         body.add("file", new ByteArrayResource(imageFile.getBytes()) {
             @Override
             public String getFilename() {
-                return UUID.randomUUID().toString();
+                return filename;
             }
         });
 
         body.add("requireSignedURLs", false);
-
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-
         String url = apiUrl.replace("{account_id}", cloudflareAccountID);
-
-        CloudflareApiResponse cloudflareApiResponse = new CloudflareApiResponse();
-        ResponseEntity<CloudflareApiResponse> response = null;
+        ResponseEntity<CloudflareApiResponse> response;
 
         try {
-            log.info("Sending ImageID: {} request to URL: {}", body.get("file"), url);
+            log.info("Sending ImageID: {} request to URL: {}",filename , url);
             response = restTemplate.postForEntity(url, requestEntity, CloudflareApiResponse.class);
+
             if (response.getStatusCode() == HttpStatus.OK) {
-                log.info("{} uploaded successfully to Cloudflare.", body.get("file"));
+                log.info("{} uploaded successfully to Cloudflare.", filename);
                 return response.getBody();
             }
-            log.error("Failed to upload image to Cloudflare. Status code: {}", response.getStatusCode());
-        } catch (HttpClientErrorException e){
-            assert response != null;
-            cloudflareApiResponse.setErrors(Objects.requireNonNull(response.getBody()).getErrors());
-            log.error("Cloudflare API error: {}", e.getResponseBodyAsString());
-        }
 
-        return cloudflareApiResponse;
+            log.error("Failed to upload image to Cloudflare. Status code: {}", response.getStatusCode());
+            return createErrorResponse("Upload failed with status: " + response.getStatusCode());
+
+        } catch (HttpClientErrorException e) {
+            log.error("Cloudflare API client error: {}", e.getResponseBodyAsString());
+
+            try {
+                // Parse the error response into our API response object
+                ObjectMapper mapper = new ObjectMapper();
+                return mapper.readValue(e.getResponseBodyAsString(), CloudflareApiResponse.class);
+            } catch (JsonProcessingException jsonException) {
+                log.error("Failed to parse Cloudflare error response", jsonException);
+                return createErrorResponse("Authentication failed: " + e.getStatusCode());
+            }
+
+        } catch (RestClientException e) {
+            // Handle other REST client exceptions (network issues, etc.)
+            log.error("REST client error while uploading to Cloudflare", e);
+            return createErrorResponse("Failed to communicate with Cloudflare: " + e.getMessage());
+
+        } catch (Exception e) {
+            // Catch any other unexpected exceptions
+            log.error("Unexpected error while uploading to Cloudflare", e);
+            return createErrorResponse("Internal server error");
+        }
     }
 
     @Override
@@ -100,16 +117,24 @@ public class CloudflareApiServiceImpl implements CloudflareApiService {
             );
     
             if (response.getStatusCode() == HttpStatus.OK) {
-                log.info("ImageID: {} deleted successfully from Cloudflare.");
+                log.info("ImageID: {} deleted successfully from Cloudflare.", imageID);
                 return response.getBody();
             }
             log.error("Failed to delete image from Cloudflare. Status code: {}", response.getStatusCode());
         } catch (HttpClientErrorException e) {
             log.error("Cloudflare API error: {}", e.getResponseBodyAsString());
-            cloudflareApiResponse.setErrors(List.of(e.getMessage()));
+            createErrorResponse(e.getMessage());
         }
-    
         return cloudflareApiResponse;
+    }
+
+    private CloudflareApiResponse createErrorResponse(String message) {
+        CloudflareApiResponse errorResponse = new CloudflareApiResponse();
+        errorResponse.setSuccess(false);
+        CloudflareException error = new CloudflareException();
+        error.setMessage(message);
+        errorResponse.setErrors(Collections.singletonList(error));
+        return errorResponse;
     }
 }
     

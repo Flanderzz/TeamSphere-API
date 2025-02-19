@@ -1,5 +1,6 @@
 package co.teamsphere.api.response;
 
+import co.teamsphere.api.exception.CloudflareException;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,7 +19,7 @@ public class CloudflareApiResponse {
 
     private Result result;
     private boolean success;
-    private List<String> errors;
+    private List<CloudflareException> errors;
     private List<String> messages;
 
     @Getter

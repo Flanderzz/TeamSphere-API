@@ -1,10 +1,18 @@
 package co.teamsphere.api.services.impl;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.Objects;
-import java.util.regex.Pattern;
-
+import co.teamsphere.api.config.JWTTokenProvider;
+import co.teamsphere.api.exception.CloudflareException;
+import co.teamsphere.api.exception.ProfileImageException;
+import co.teamsphere.api.exception.UserException;
+import co.teamsphere.api.models.User;
+import co.teamsphere.api.repository.UserRepository;
+import co.teamsphere.api.request.SignupRequest;
+import co.teamsphere.api.response.AuthResponse;
+import co.teamsphere.api.response.CloudflareApiResponse;
+import co.teamsphere.api.services.AuthenticationService;
+import co.teamsphere.api.services.CloudflareApiService;
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -15,19 +23,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
-import co.teamsphere.api.config.JWTTokenProvider;
-import co.teamsphere.api.exception.ProfileImageException;
-import co.teamsphere.api.exception.UserException;
-import co.teamsphere.api.models.User;
-import co.teamsphere.api.repository.UserRepository;
-import co.teamsphere.api.request.SignupRequest;
-import co.teamsphere.api.response.AuthResponse;
-import co.teamsphere.api.response.CloudflareApiResponse;
-import co.teamsphere.api.services.AuthenticationService;
-import co.teamsphere.api.services.CloudflareApiService;
-
-import jakarta.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Objects;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @Validated
@@ -57,93 +58,80 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     @Transactional
-    public AuthResponse signupUser(@Valid SignupRequest request) throws UserException, ProfileImageException {
-        try {
-            if (isEmailInvalid(request.getEmail())) {
-                log.warn("Bad Email={} was passed in", request.getEmail());
-                throw new UserException("Valid email was not passed in");
-            }
-
-            // Check if user with the given email or username already exists
-            if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-                log.warn("Email={} is already used with another account", request.getEmail());
-                throw new UserException("Email is already used with another account");
-            }
-
-            if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-                log.warn("Username={} is already used with another account", request.getUsername());
-                throw new UserException("Username is already used with another account");
-            }
-
-            if (request.getFile().isEmpty() || (!request.getFile().getContentType().equals("image/jpeg") && !request.getFile().getContentType().equals("image/png"))) {
-                log.warn("File type not accepted, {}", request.getFile().getContentType());
-                throw new ProfileImageException("Profile Picture type is not allowed!");
-            }
-
-            // Upload profile picture to Cloudflare
-            CloudflareApiResponse responseEntity = cloudflareApiService.uploadImage(request.getFile());
-            String baseUrl = Objects.requireNonNull(responseEntity.getResult().getVariants().get(0));
-            String profileUrl = baseUrl.substring(0, baseUrl.lastIndexOf("/") + 1) + "public";
-
-            var currentDateTime = LocalDateTime.now().atOffset(ZoneOffset.UTC);
-
-            // Creating a new user
-            var newUser = User.builder()
-                    .email(request.getEmail())
-                    .username(request.getUsername())
-                    .password(passwordEncoder.encode(request.getPassword()))
-                    .profilePicture(profileUrl)
-                    .createdDate(currentDateTime)
-                    .lastUpdatedDate(currentDateTime)
-                    .build();
-
-            userRepository.save(newUser);
-
-            // auto-login after signup
-            Authentication authentication = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            String token = jwtTokenProvider.generateJwtToken(authentication);
-
-            return new AuthResponse(token, true);
+    public AuthResponse signupUser(@Valid SignupRequest request) throws UserException, ProfileImageException, IOException {
+        if (isEmailInvalid(request.getEmail())) {
+            log.warn("Bad Email={} was passed in", request.getEmail());
+            throw new UserException("Valid email was not passed in");
         }
-        catch (UserException e) {
-            // TODO: think about returning a response and not throwing an error in a catch block
-            log.error("Error during signup process", e);
-            throw e; // Rethrow specific exception to be handled by global exception handler
+
+        // Check if user with the given email or username already exists
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            log.warn("Email={} is already used with another account", request.getEmail());
+            throw new UserException("Email is already used with another account");
         }
-        catch (ProfileImageException e){
-            log.error("ERROR: {}", e.getMessage());
-            throw new ProfileImageException(e.getMessage());
+
+        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+            log.warn("Username={} is already used with another account", request.getUsername());
+            throw new UserException("Username is already used with another account");
         }
-        catch (Exception e) {
-            log.error("Unexpected error during signup process", e);
-            throw new UserException("Unexpected error during signup process");
+
+        if (request.getFile().isEmpty() || (!Objects.equals(request.getFile().getContentType(), "image/jpeg") && !Objects.equals(request.getFile().getContentType(), "image/png"))) {
+            log.warn("File type not accepted, {}", request.getFile().getContentType());
+            throw new ProfileImageException("Profile Picture type is not allowed!");
         }
+
+        // Upload profile picture to Cloudflare
+        CloudflareApiResponse responseEntity = cloudflareApiService.uploadImage(request.getFile());
+
+        // Check if the Cloudflare API call was unsuccessful
+        if (!responseEntity.isSuccess() || (responseEntity.getErrors() != null && !responseEntity.getErrors().isEmpty())) {
+            String errorMessage = responseEntity.getErrors().stream()
+                    .map(CloudflareException::getMessage)
+                    .collect(Collectors.joining(", "));
+            throw new ProfileImageException("Cloudflare upload failed: " + errorMessage);
+        }
+
+
+        String baseUrl = Objects.requireNonNull(responseEntity.getResult().getVariants().get(0));
+        String profileUrl = baseUrl.substring(0, baseUrl.lastIndexOf("/") + 1) + "public";
+
+        var currentDateTime = LocalDateTime.now().atOffset(ZoneOffset.UTC);
+
+        // Creating a new user
+        var newUser = User.builder()
+                .email(request.getEmail())
+                .username(request.getUsername())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .profilePicture(profileUrl)
+                .createdDate(currentDateTime)
+                .lastUpdatedDate(currentDateTime)
+                .build();
+
+        userRepository.save(newUser);
+
+        // auto-login after signup
+        Authentication authentication = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String token = jwtTokenProvider.generateJwtToken(authentication);
+
+        return new AuthResponse(token, true);
     }
 
     @Override
     @Transactional
     public AuthResponse loginUser(String email, String password) throws UserException {
-        try {
-            if(isEmailInvalid(email)){
-                log.warn("Email={} is already used with another account", email);
-                throw new UserException("Email is already used with another account");
-            }
-
-            Authentication authentication = authentication(email, password);
-
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-
-            String token = jwtTokenProvider.generateJwtToken(authentication);
-
-            return new AuthResponse(token, true);
-        } catch (BadCredentialsException e) {
-            log.warn("Authentication failed for user with username: {}", email);
-            throw new UserException("Invalid username or password.");
-        } catch (Exception e) {
-            log.error("Unexpected error during login process", e);
-            throw new UserException("Unexpected error during login process.");
+        if(isEmailInvalid(email)){
+            log.warn("Email={} is already used with another account", email);
+            throw new UserException("Email is already used with another account");
         }
+
+        Authentication authentication = authentication(email, password);
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        String token = jwtTokenProvider.generateJwtToken(authentication);
+
+        return new AuthResponse(token, true);
     }
 
     public static boolean isEmailInvalid(String email) {
