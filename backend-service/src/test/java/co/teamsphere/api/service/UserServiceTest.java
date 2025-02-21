@@ -126,7 +126,7 @@ class UserServiceTest {
 
 
     @Test
-    void updateUser_ThrowsException_WhenUserNotFound() {
+    void updateUserThrowsExceptionWhenUserNotFound() {
         UUID nonExistentId = UUID.randomUUID();
         UpdateUserRequest request = new UpdateUserRequest();
         when(userRepo.findById(nonExistentId)).thenReturn(Optional.empty());
@@ -158,7 +158,7 @@ class UserServiceTest {
 
 
     @Test
-    void updateUser_ThrowsException_WhenProfileUploadFails() throws IOException {
+    void updateUserThrowsExceptionWhenProfileUploadFails() throws IOException {
         when(userRepo.save(any(User.class))).thenReturn(user);
         User savedUser = userRepo.save(user);
         UpdateUserRequest request = new UpdateUserRequest();
