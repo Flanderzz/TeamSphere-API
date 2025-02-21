@@ -6,12 +6,14 @@ WORKDIR /workspace/app
 COPY mvnw .
 COPY .mvn .mvn
 COPY pom.xml .
-COPY src src
+COPY backend-service/pom.xml backend-service/
 
-# Fix executable permission for mvnw
-RUN chmod +x mvnw
-# Package the application skipping tests
-RUN ./mvnw clean package -DskipTests
+# Download dependencies first (cached layer)
+RUN mvn dependency:go-offline -B
+
+COPY backend-service/src backend-service/src
+
+RUN mvn clean package -pl backend-service -am -DskipTests
 
 FROM eclipse-temurin:17-jdk-alpine
 VOLUME /tmp
