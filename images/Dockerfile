@@ -8,9 +8,6 @@ COPY .mvn .mvn
 COPY pom.xml .
 COPY backend-service/pom.xml backend-service/
 
-# Download dependencies first (cached layer)
-RUN mvn dependency:go-offline -B
-
 COPY backend-service/src backend-service/src
 
 RUN mvn clean package -pl backend-service -am -DskipTests
