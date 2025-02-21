@@ -1,6 +1,6 @@
 jwt:
-  publicKey: ${public-key}
-  privateKey: ${private-key}
+  publicKey: ${PUBLIC_KEY}
+  privateKey: ${PRIVATE_KEY}
   audience: "localhost:3000"
 cloudflare:
   api:
@@ -29,7 +29,6 @@ spring:
     multipart:
       max-file-size: 20MB
       max-request-size: 20MB
-  application.name: TeamSphere
 
 app:
   environment:
