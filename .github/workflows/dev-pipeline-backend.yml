@@ -1,0 +1,93 @@
+name: Docker Build, Push and Deploy
+on:
+  push:
+    branches:
+      - '**'
+    tags-ignore:
+      - '**'
+jobs:
+  build:
+    name: Build & push docker image
+    runs-on: ubuntu-latest
+    outputs:
+      APP_VERSION: '${{steps.version-selector.outputs.version}}'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: corretto
+      - name: Make mvnw executable
+        run: chmod +x ./mvnw
+      - name: Running Unit Tests
+        run: |
+          ./mvnw clean compile install
+      - name: Docker metadata
+        id: metadata
+        uses: docker/metadata-action@v5
+        with:
+          images: '${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.APP_NAME }}'
+          tags: |
+            # For release tags (e.g., release-1.0.0)
+            type=match,pattern=release-(.*),group=1
+            type=match,pattern=release-(\d+.\d+).*,group=1
+            type=match,pattern=release-(\d+.\d+).*,group=1
+
+            # For branches (e.g., main -> main, feature/xyz -> feature-xyz)
+            type=ref,event=branch
+
+            # For pull requests (PR-123)
+            type=ref,event=pr
+      - name: Set Version
+        id: version-selector
+        run: echo "version=$DOCKER_METADATA_OUTPUT_VERSION" >> "$GITHUB_OUTPUT"
+      - name: Login to DockerHub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          username: '${{ secrets.DOCKERHUB_USERNAME }}'
+          password: '${{ secrets.DOCKERHUB_TOKEN }}'
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64
+          tags: ${{ steps.metadata.outputs.tags }}
+          labels: ${{ steps.metadata.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            APP_VERSION=$DOCKER_METADATA_OUTPUT_VERSION      
+
+  deploy:
+    name: Deploy Backend
+    runs-on: ubuntu-latest
+    needs:
+      - build
+    steps:
+      - name: executing remote ssh commands
+        uses: appleboy/ssh-action@v1.1.0
+        env:
+          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+          MYSQL_USERNAME: ${{ secrets.MYSQL_USERNAME }}
+          MYSQL_USER_PASSWORD: ${{ secrets.MYSQL_USER_PASSWORD }}
+          RABBITMQ_USERNAME: ${{ secrets.RABBITMQ_USERNAME }}
+          RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
+        with:
+          host: '${{ secrets.VPS_IP }}'
+          username: '${{ secrets.VPS_USERNAME }}'
+          key: '${{ secrets.SSH_PRIVATE_KEY }}'
+          port: '${{ secrets.SSH_PORT }}'
+          envs: MYSQL_ROOT_PASSWORD,MYSQL_DATABASE,MYSQL_USERNAME,MYSQL_USER_PASSWORD,RABBITMQ_USERNAME,RABBITMQ_PASSWORD
+          script: |
+            export IMAGE_VERSION=${{ needs.build.outputs.APP_VERSION }}
+            echo "Image version1: $IMAGE_VERSION"
