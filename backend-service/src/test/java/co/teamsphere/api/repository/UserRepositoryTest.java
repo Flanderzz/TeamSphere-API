@@ -18,14 +18,13 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Transactional
-public class UserRepositoryTests {
+public class UserRepositoryTest {
 
     @MockBean
     private RestTemplateBuilder restTemplateBuilder;
@@ -51,9 +50,7 @@ public class UserRepositoryTests {
                 .build();
 
         userRepository.saveAndFlush(user);
-
         Optional<User> foundUser = userRepository.findByEmail("test@gmail.com");
-
         assertTrue(foundUser.isPresent());
         assertEquals("tester", foundUser.get().getUsername());
     }
@@ -68,11 +65,8 @@ public class UserRepositoryTests {
                 .createdDate(OffsetDateTime.now())
                 .lastUpdatedDate(OffsetDateTime.now())
                 .build();
-
         userRepository.saveAndFlush(user);
-
         Optional<User> findUser = userRepository.findByUsername("Lancer");
-
         assertTrue(findUser.isPresent());
         assertEquals("Lancer", findUser.get().getUsername());
     }
@@ -122,23 +116,17 @@ public class UserRepositoryTests {
         Chat chat = new Chat();
         chat.setChatName("Test Chat");
         chatRepository.saveAndFlush(chat);
-
-
         Messages message1 = new Messages();
         message1.setChat(chat);
         message1.setTimeStamp(LocalDateTime.now().minusMinutes(10));
         message1.setContent("First message");
         messagesRepository.saveAndFlush(message1);
-
         Messages message2 = new Messages();
         message2.setChat(chat);
         message2.setTimeStamp(LocalDateTime.now().minusMinutes(5));
         message2.setContent("Second message");
         messagesRepository.saveAndFlush(message2);
-
-
         List<Messages> messages = messagesRepository.findMessageByChatId(chat.getId());
-
         assertFalse(messages.isEmpty());
         assertEquals(2, messages.size());
     }
@@ -156,17 +144,13 @@ public class UserRepositoryTests {
                 .build();
 
         userRepository.saveAndFlush(user);
-
         Chat chat1 = new Chat();
         chat1.setUsers(Set.of(user));
         chatRepository.saveAndFlush(chat1);
-
         Chat chat2 = new Chat();
         chat2.setUsers(Set.of(user));
         chatRepository.saveAndFlush(chat2);
-
         Page<Chat> chats = chatRepository.findChatsByUserId(user.getId(), PageRequest.of(0, 10));
-
         assertFalse(chats.isEmpty());
         assertEquals(2, chats.getTotalElements());
     }
@@ -192,14 +176,11 @@ public class UserRepositoryTests {
                 .build();
 
         userRepository.saveAllAndFlush(List.of(user1, user2));
-
         Chat chat = new Chat();
         chat.setIsGroup(false);
         chat.setUsers(Set.of(user1, user2));
         chatRepository.saveAndFlush(chat);
-
         Chat foundChat = chatRepository.findSingleChatByUsersId(user1, user2);
-
         assertNotNull(foundChat);
         assertFalse(foundChat.getIsGroup());
         assertEquals(2, foundChat.getUsers().size());
@@ -209,10 +190,8 @@ public class UserRepositoryTests {
     void deleteChatsByIdTest() {
         Chat chat = new Chat();
         chatRepository.saveAndFlush(chat);
-
         chatRepository.deleteById(chat.getId());
         Optional<Chat> deletedChat = chatRepository.findById(chat.getId());
-
         assertFalse(deletedChat.isPresent());
     }
 }

@@ -48,17 +48,13 @@ class MessageServiceImplTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-
         user = new User();
         user.setId(UUID.randomUUID());
         user.setEmail("test@example.com");
-
         chat = new Chat();
         chat.setId(UUID.randomUUID());
-
         messageId = UUID.randomUUID();
         chatId = chat.getId();
-
         message = Messages.builder()
                 .id(messageId)
                 .chat(chat)
@@ -69,20 +65,16 @@ class MessageServiceImplTest {
                 .build();
     }
 
-
     @Test
-    void sendMessage_SavesMessage_WhenValidRequest() throws UserException, ChatException {
+    void sendMessageSavesMessageWhenValidRequest() throws UserException, ChatException {
         SendMessageRequest request = new SendMessageRequest();
         request.setUserId(user.getId());
         request.setChatId(chat.getId());
         request.setContent("Hello World");
-
         when(userService.findUserById(user.getId())).thenReturn(user);
         when(chatService.findChatById(chat.getId())).thenReturn(chat);
         when(messageRepo.save(any(Messages.class))).thenReturn(message);
-
         Messages savedMessage = messageService.sendMessage(request);
-
         assertNotNull(savedMessage);
         assertEquals("Hello World", savedMessage.getContent());
         assertEquals(chat, savedMessage.getChat());
@@ -91,32 +83,26 @@ class MessageServiceImplTest {
 
 
     @Test
-    void deleteMessage_RemovesMessage_WhenMessageExists() throws MessageException {
+    void deleteMessageRemovesMessageWhenMessageExists() throws MessageException {
         when(messageRepo.findById(messageId)).thenReturn(Optional.of(message));
-
         messageService.deleteMessage(messageId);
-
         verify(messageRepo, times(1)).deleteById(messageId);
     }
 
 
     @Test
-    void deleteMessage_ThrowsException_WhenMessageNotFound() {
+    void deleteMessageThrowsExceptionWhenMessageNotFound() {
         when(messageRepo.findById(messageId)).thenReturn(Optional.empty());
-
         assertThrows(MessageException.class, () -> messageService.deleteMessage(messageId));
-
         verify(messageRepo, never()).deleteById(any());
     }
 
 
     @Test
-    void getChatsMessages_ReturnsMessagesList_WhenChatExists() throws ChatException {
+    void getChatsMessagesReturnsMessagesListWhenChatExists() throws ChatException {
         when(chatService.findChatById(chatId)).thenReturn(chat);
         when(messageRepo.findMessageByChatId(chatId)).thenReturn(List.of(message));
-
         List<Messages> messagesList = messageService.getChatsMessages(chatId);
-
         assertNotNull(messagesList);
         assertFalse(messagesList.isEmpty());
         assertEquals(1, messagesList.size());
@@ -125,30 +111,21 @@ class MessageServiceImplTest {
 
 
     @Test
-    void getChatsMessages_ThrowsException_WhenChatNotFound() throws ChatException {
+    void getChatsMessagesThrowsExceptionWhenChatNotFound() throws ChatException {
         when(chatService.findChatById(chatId)).thenThrow(new ChatException("Chat not found"));
-
         assertThrows(ChatException.class, () -> messageService.getChatsMessages(chatId));
-
         verify(messageRepo, never()).findMessageByChatId(any());
     }
-
-
     @Test
-    void findMessageById_ReturnsMessage_WhenMessageExists() throws MessageException {
+    void findMessageByIdReturnsMessageWhenMessageExists() throws MessageException {
         when(messageRepo.findById(messageId)).thenReturn(Optional.of(message));
-
         Messages foundMessage = messageService.findMessageById(messageId);
-
         assertNotNull(foundMessage);
         assertEquals("Hello World", foundMessage.getContent());
     }
-
-
     @Test
-    void findMessageById_ThrowsException_WhenMessageNotFound() {
+    void findMessageByIdThrowsExceptionWhenMessageNotFound() {
         when(messageRepo.findById(messageId)).thenReturn(Optional.empty());
-
         assertThrows(MessageException.class, () -> messageService.findMessageById(messageId));
     }
 }
