@@ -6,8 +6,8 @@ spring:
       uri: ${VAULT_ADDR:https://dev.vault.teamsphere.co}
       authentication: APPROLE
       app-role:
-        role-id: e4401958-3ace-6f9c-b905-caed23d030d8
-        secret-id: short-lived-secret
+        role-id: ${ROLE_ID:4401958-3ace-6f9c-b905-caed23d030d8}
+        secret-id: ${SECRET_ID:short-lived-secret}
       kv:
         enabled: true
         backend: secret

@@ -74,21 +74,18 @@ jobs:
       - name: executing remote ssh commands
         uses: appleboy/ssh-action@v1.1.0
         env:
-          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
-          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
-          MYSQL_USERNAME: ${{ secrets.MYSQL_USERNAME }}
-          MYSQL_USER_PASSWORD: ${{ secrets.MYSQL_USER_PASSWORD }}
-          RABBITMQ_USERNAME: ${{ secrets.RABBITMQ_USERNAME }}
-          RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
+          VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+          ROLE_ID: ${{ secrets.ROLE_ID }}
+          SECRET_ID: ${{ secrets.SECRET_ID }}
         with:
           host: '${{ secrets.VPS_IP }}'
           username: '${{ secrets.VPS_USERNAME }}'
           key: '${{ secrets.SSH_PRIVATE_KEY }}'
           port: '${{ secrets.SSH_PORT }}'
-          envs: MYSQL_ROOT_PASSWORD,MYSQL_DATABASE,MYSQL_USERNAME,MYSQL_USER_PASSWORD,RABBITMQ_USERNAME,RABBITMQ_PASSWORD,ALLOWED_ORIGIN,CLOUDFLARE_ACCOUNTID,CLOUDFLARE_KEY
+          envs: VAULT_ADDR,ROLE_ID,SECRET_ID
           script: |
             export IMAGE_VERSION=${{ needs.build.outputs.APP_VERSION }}
-            echo "Image version1: $IMAGE_VERSION"
+            echo "VAULT_ADDR: $VAULT_ADDR"
             cd /home/teamsphere/projects/teamsphere-deployment
             
             # Docker login
