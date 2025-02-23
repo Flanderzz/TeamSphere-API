@@ -77,18 +77,27 @@ jobs:
       - name: executing remote ssh commands
         uses: appleboy/ssh-action@v1.1.0
         env:
-          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
-          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
-          MYSQL_USERNAME: ${{ secrets.MYSQL_USERNAME }}
-          MYSQL_USER_PASSWORD: ${{ secrets.MYSQL_USER_PASSWORD }}
-          RABBITMQ_USERNAME: ${{ secrets.RABBITMQ_USERNAME }}
-          RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
+          VAULT_DEV_ADDR: ${{secrets.VAULT_DEV_ADDR }}
+          VAULT_DEV_TOKEN: ${{secrets.VAULT_DEV_TOKEN }}
         with:
           host: '${{ secrets.VPS_IP }}'
           username: '${{ secrets.VPS_USERNAME }}'
           key: '${{ secrets.SSH_PRIVATE_KEY }}'
           port: '${{ secrets.SSH_PORT }}'
-          envs: MYSQL_ROOT_PASSWORD,MYSQL_DATABASE,MYSQL_USERNAME,MYSQL_USER_PASSWORD,RABBITMQ_USERNAME,RABBITMQ_PASSWORD
+          envs: VAULT_DEV_ADDR,VAULT_DEV_TOKEN
           script: |
-            export IMAGE_VERSION=${{ needs.build.outputs.APP_VERSION }}
-            echo "Image version1: $IMAGE_VERSION"
+            export IMAGE_DEV_VERSION=${{ needs.build.outputs.APP_VERSION }}
+            echo "Image version: $IMAGE_DEV_VERSION"
+            export VAULT_DEV_SECRET_ID=$(curl --silent \
+              --request POST \
+              --header "X-Vault-Token: ${VAULT_DEV_TOKEN}" \
+              --data '{}' \
+              "${VAULT_DEV_ADDR}/v1/auth/approle/role/backend-service/secret-id" \
+              | jq -r '.data.secret_id')
+            export VAULT_DEV_ROLE_ID=$(curl --silent \
+              --request GET \
+              --header "X-Vault-Token: ${VAULT_DEV_TOKEN}" \
+              "${VAULT_DEV_ADDR}/v1/auth/approle/role/backend-service/role-id" \
+              | jq -r '.data.role_id')
+
+            echo "Role id is: $VAULT_DEV_ROLE_ID"
