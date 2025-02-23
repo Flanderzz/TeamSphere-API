@@ -24,9 +24,8 @@ spring:
     database: mysql
     hibernate:
       ddl-auto: update
-    show-sql: true
   rabbitmq:
-    host: localhost
+    host: rabbitmq
     username: ${RABBITMQ_USERNAME}
     password: ${RABBITMQ_PASSWORD}
     port: 61613
