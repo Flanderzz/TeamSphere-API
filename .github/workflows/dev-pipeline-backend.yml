@@ -101,3 +101,9 @@ jobs:
               | jq -r '.data.role_id')
 
             echo "Role id is: $VAULT_DEV_ROLE_ID"
+            cd /home/teamsphere/projects/teamsphere-deployment
+            
+            # Docker login
+            echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin            
+            docker pull bravinr/teamsphere:$IMAGE_DEV_VERSION
+            docker compose up spring-app-dev
