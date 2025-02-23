@@ -19,11 +19,11 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: ${MYSQL_USERNAME}
     password: ${MYSQL_USER_PASSWORD}
-    url: jdbc:mysql://mysql-dev:3307/${MYSQL_DATABASE}
+    url: jdbc:mysql://mysql-dev:3306/${MYSQL_DATABASE}
   jpa:
     database: mysql
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: true
   rabbitmq:
     host: localhost
