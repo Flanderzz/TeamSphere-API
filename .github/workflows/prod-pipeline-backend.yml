@@ -1,0 +1,117 @@
+name: Docker Build, Push and Deploy
+'on':
+  push:
+    tags:
+      - 'release-[0-9]+.[0-9]+.[0-9]+'
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: corretto
+
+      - name: Make mvnw executable
+        run: chmod +x ./mvnw
+
+      - name: Running Unit Tests
+        run: ./mvnw clean compile install
+
+  build:
+    name: Build & Push Docker Image
+    needs: test
+    runs-on: ubuntu-latest
+    outputs:
+      APP_VERSION: '${{steps.version-selector.outputs.version}}'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Docker metadata
+        id: metadata
+        uses: docker/metadata-action@v5
+        with:
+          images: '${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.APP_NAME }}'
+          tags: |
+            type=match,pattern=release-(.*),group=1
+            type=match,pattern=release-(\d+.\d+).*,group=1
+            type=match,pattern=release-(\d+.\d+).*,group=1
+            type=ref,event=branch
+            type=ref,event=pr
+
+      - name: Set Version
+        id: version-selector
+        run: echo "version=$DOCKER_METADATA_OUTPUT_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Login to DockerHub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          username: '${{ secrets.DOCKERHUB_USERNAME }}'
+          password: '${{ secrets.DOCKERHUB_TOKEN }}'
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: images/Dockerfile
+          push: true
+          platforms: linux/amd64
+          tags: ${{ steps.metadata.outputs.tags }}
+          labels: ${{ steps.metadata.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            APP_VERSION=$DOCKER_METADATA_OUTPUT_VERSION
+
+  deploy:
+    name: Deploy to Environment
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.1.0
+        env:
+          VAULT_ADDR: ${{secrets.VAULT_ADDR }}
+          VAULT_TOKEN: ${{secrets.VAULT_PROD_TOKEN }}
+        with:
+          host: '${{ secrets.VPS_IP }}'
+          username: '${{ secrets.VPS_USERNAME }}'
+          key: '${{ secrets.SSH_PRIVATE_KEY }}'
+          port: '${{ secrets.SSH_PORT }}'
+          envs: VAULT_ADDR,VAULT_TOKEN
+          script: |
+            export IMAGE_VERSION=${{ needs.build.outputs.APP_VERSION }}
+            echo "Image version: $IMAGE_DEV_VERSION"
+            
+            # Get Vault credentials
+            export SECRET_ID=$(curl --silent \
+              --request POST \
+              --header "X-Vault-Token: ${VAULT_TOKEN}" \
+              --data '{}' \
+              "${VAULT_ADDR}/v1/auth/approle/role/backend-service/secret-id" \
+              | jq -r '.data.secret_id')
+            export ROLE_ID=$(curl --silent \
+              --request GET \
+              --header "X-Vault-Token: ${VAULT_TOKEN}" \
+              "${VAULT_ADDR}/v1/auth/approle/role/backend-service/role-id" \
+              | jq -r '.data.role_id')
+
+            # Deploy application
+            cd /home/teamsphere/projects/teamsphere-deployment
+            echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin            
+            docker pull bravinr/teamsphere:$IMAGE_DEV_VERSION
+            docker compose up -d --force-recreate spring-app
