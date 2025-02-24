@@ -1,11 +1,9 @@
 package co.teamsphere.api.services.impl;
 
 import co.teamsphere.api.DTO.ChatSummaryDTO;
-import co.teamsphere.api.DTOmapper.ChatDTOMapper;
 import co.teamsphere.api.exception.ChatException;
 import co.teamsphere.api.exception.UserException;
 import co.teamsphere.api.models.Chat;
-import co.teamsphere.api.models.Messages;
 import co.teamsphere.api.models.User;
 import co.teamsphere.api.repository.ChatRepository;
 import co.teamsphere.api.request.GroupChatRequest;
@@ -19,10 +17,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.ArrayList;
 
 @Service
 @Validated
@@ -33,12 +31,9 @@ public class ChatServiceImpl implements ChatService {
 
     private final ChatRepository chatRepository;
 
-    private final ChatDTOMapper chatDTOMapper;
-
-    public ChatServiceImpl(UserService userService, ChatRepository chatRepository, ChatDTOMapper chatDTOMapper) {
+    public ChatServiceImpl(UserService userService, ChatRepository chatRepository) {
         this.userService = userService;
         this.chatRepository = chatRepository;
-        this.chatDTOMapper = chatDTOMapper;
     }
 
     @Override
@@ -147,16 +142,12 @@ public class ChatServiceImpl implements ChatService {
                 }
             }
 
-            //TODO: Add builder pattern here
-//            chat.builder().chat_name(req.getChat_name())
-////                    .chat_image(req.getChat_image())
-////                    .is_group(true)
-////                    .admins(reqUser
-////                    .build();
-            chat.setChatName(req.getChat_name());
-            chat.setChatImage(req.getChat_image());
-            chat.setIsGroup(true);
-            chat.getAdmins().add(reqUser);
+            Chat.builder()
+                    .chatName(req.getChat_name())
+                    .chatImage(req.getChat_image())
+                    .isGroup(true)
+                    .admins(Collections.singleton(reqUser))
+                    .build();
 
             Chat createdChat = chatRepository.save(chat);
 
@@ -246,46 +237,11 @@ public class ChatServiceImpl implements ChatService {
             log.info("Getting chat summaries for user with ID: {}", userId);
 
             Pageable pageable = PageRequest.of(page, size);
-            Page<Chat> userChatsPage = chatRepository.findChatsByUserId(userId, pageable);
-            List<Chat> userChats = userChatsPage.getContent();
+            Page<ChatSummaryDTO> userChatsPage = chatRepository.findChatsByUserId(userId, pageable);
 
-            List<ChatSummaryDTO> chatSummaries = new ArrayList<>();
-            for (Chat chat : userChats) {
-                String[] chatInfo = { chat.getChatName(), chat.getChatImage() };
+            log.info("Retrieved {} chat summaries for user with ID: {}", userChatsPage.getSize(), userId);
 
-                if (!chat.getIsGroup()) {
-                    // Use a wrapper object or array to hold mutable state
-                    final String[] chatNameImage = { chat.getChatName(), chat.getChatImage() };
-
-                    chat.getUsers().stream()
-                            .filter(user -> !user.getId().equals(userId))
-                            .findFirst()
-                            .ifPresent(otherUser -> {
-                                chatNameImage[0] = otherUser.getUsername();
-                                chatNameImage[1] = otherUser.getProfilePicture();
-                            });
-                    chatInfo[0] = chatNameImage[0];
-                    chatInfo[1] = chatNameImage[1];
-                }
-                Messages lastMessage = null;
-                if (!chat.getMessages().isEmpty()) {
-                    lastMessage = chat.getMessages().get(chat.getMessages().size() - 1);
-                }
-
-                ChatSummaryDTO summary = ChatSummaryDTO.builder()
-                        .id(chat.getId())
-                        .chatName(chatInfo[0])
-                        .chatImage(chatInfo[1])
-                        .createdBy(chat.getCreatedBy().getId())
-                        .lastMessage(lastMessage != null ? chatDTOMapper.toMessageDto(lastMessage) : null)
-                        .build();
-
-                chatSummaries.add(summary);
-            }
-
-            log.info("Retrieved {} chat summaries for user with ID: {}", chatSummaries.size(), userId);
-
-            return chatSummaries;
+            return userChatsPage.getContent();
         } catch (Exception e) {
             log.error("Error getting chat summaries for user with ID: {}", userId, e);
             throw new ChatException("Error getting chat summaries for user with ID: " + userId + ". " + e.getMessage());

@@ -8,6 +8,7 @@ import co.teamsphere.api.repository.UserRepository;
 import co.teamsphere.api.request.LoginRequest;
 import co.teamsphere.api.request.SignupRequest;
 import co.teamsphere.api.response.AuthResponse;
+import co.teamsphere.api.response.ErrorResponse;
 import co.teamsphere.api.services.AuthenticationService;
 import co.teamsphere.api.utils.GoogleAuthRequest;
 import co.teamsphere.api.utils.GoogleUserInfo;
@@ -19,6 +20,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -93,29 +95,32 @@ public class AuthController {
             ),
             @ApiResponse(responseCode = "400", description = "Invalid input or user already exists")
     })
-    @PostMapping(value="/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<AuthResponse> userSignupMethod (
+    @PostMapping(value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> userSignupMethod(
             @Schema(description = "User details", implementation = SignupRequest.class)
-            @Valid @ModelAttribute SignupRequest request) throws UserException, ProfileImageException {
+            @Valid @ModelAttribute SignupRequest request) {
+
+        log.info("Processing signup request for user with email: {}, username: {}", request.getEmail(), request.getUsername());
+
         try {
-            log.info("Processing signup request for user with email: {}, username:{}", request.getEmail(), request.getUsername());
-
             AuthResponse authResponse = authenticationService.signupUser(request);
-
             log.info("Signup process completed successfully for user with email: {}", request.getEmail());
+            return ResponseEntity.status(HttpStatus.CREATED).body(authResponse);
 
-            return new ResponseEntity<>(authResponse, HttpStatus.CREATED);
         } catch (UserException e) {
-            log.error("Error during signup process", e);
-            throw e; // Rethrow specific exception to be handled by global exception handler
-        } catch (ProfileImageException e){
-            log.warn("File type not accepted, {}", request.getFile().getContentType());
-            throw new ProfileImageException("Profile Picture type is not allowed!");
+            log.error("User-related error during signup process", e);
+            return buildErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage(), "/signup");
+
+        } catch (ProfileImageException e) {
+            log.warn("File type not accepted: {}", request.getFile().getContentType());
+            return buildErrorResponse(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "Profile picture type is not allowed!", "/signup");
+
         } catch (Exception e) {
             log.error("Unexpected error during signup process", e);
-            throw new UserException("Unexpected error during signup process");
+            return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error during signup process", "/signup");
         }
     }
+
 
     @Operation(summary = "Login a user", description = "Login with email and password.")
     @ApiResponses(value = {
@@ -130,27 +135,29 @@ public class AuthController {
             @ApiResponse(responseCode = "401", description = "Invalid credentials")
     })
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> userLoginMethod(
+    public ResponseEntity<?> userLoginMethod(
             @Schema(description = "Login request body", implementation = LoginRequest.class)
-            @Valid @RequestBody LoginRequest loginRequest) throws UserException {
+            @Valid @RequestBody LoginRequest loginRequest) {
+
+        log.info("Processing login request for user with username: {}", loginRequest.getEmail());
+
         try {
-            log.info("Processing login request for user with username: {}", loginRequest.getEmail());
-
             AuthResponse authResponse = authenticationService.loginUser(loginRequest.getEmail(), loginRequest.getPassword());
-
             log.info("Login successful for user with username: {}", loginRequest.getEmail());
+            return ResponseEntity.ok(authResponse);
 
-            return new ResponseEntity<>(authResponse, HttpStatus.OK);
         } catch (BadCredentialsException e) {
             log.warn("Authentication failed for user with username: {}", loginRequest.getEmail());
-            throw new UserException("Invalid username or password.");
+            return buildErrorResponse(HttpStatus.UNAUTHORIZED, "Invalid username or password.", "/login");
+
         } catch (Exception e) {
             log.error("Unexpected error during login process", e);
-            throw new UserException("Unexpected error during login process.");
+            return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error during login process.", "/login");
         }
     }
 
-    @Transactional // move business logic to service layer
+    //TODO: move business logic to service layer
+    @Transactional
     @Operation(summary = "Authenticate via Google", description = "login/signup via Google OAuth.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -212,5 +219,19 @@ public class AuthController {
             log.error("Error during Google authentication: ", e);
             return new ResponseEntity<>(new AuthResponse("Error during Google authentication: " + e.getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+    private ResponseEntity<ErrorResponse> buildErrorResponse(HttpStatus status, String message, String endpoint) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                new ErrorResponse.ErrorDetails(
+                        status.value(),
+                        message,
+                        "An error occurred while processing the request.",
+                        endpoint,
+                        "POST",
+                        Instant.now().toString(),
+                        UUID.randomUUID().toString() // Unique request ID for tracking
+                )
+        );
+        return ResponseEntity.status(status).body(errorResponse);
     }
 }
