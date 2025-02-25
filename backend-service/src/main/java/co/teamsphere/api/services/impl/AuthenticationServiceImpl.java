@@ -18,7 +18,6 @@ import org.springframework.validation.annotation.Validated;
 import co.teamsphere.api.config.JWTTokenProvider;
 import co.teamsphere.api.exception.ProfileImageException;
 import co.teamsphere.api.exception.UserException;
-import co.teamsphere.api.models.RefreshToken;
 import co.teamsphere.api.models.User;
 import co.teamsphere.api.repository.UserRepository;
 import co.teamsphere.api.request.SignupRequest;

@@ -74,12 +74,12 @@ public class AuthController {
     @GetMapping("/verify")
     @Operation(summary = "Verify JWT Token", description = "Check if a provided JWT token is valid.")
     @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200"
+        @ApiResponse(
+                responseCode = "200"
             ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "Token is invalid or not provided"
+        @ApiResponse(
+                responseCode = "401",
+                description = "Token is invalid or not provided"
             )
     })
     public ResponseEntity<?> verifyJwtToken() {
@@ -134,15 +134,15 @@ public class AuthController {
     @PostMapping(value="/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Sign up a new user", description = "Register new user and returns a JWT token.")
     @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "201",
-                    description = "User successfully registered",
-                    content = @Content(
-                                mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                schema = @Schema(implementation = AuthResponse.class)
-                    )
+        @ApiResponse(
+                responseCode = "201",
+                description = "User successfully registered",
+                content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = AuthResponse.class)
+                )
             ),
-            @ApiResponse(responseCode = "400", description = "Invalid input or user already exists")
+        @ApiResponse(responseCode = "400", description = "Invalid input or user already exists")
     })
     public ResponseEntity<AuthResponse> userSignupMethod (
             @Schema(description = "User details", implementation = SignupRequest.class)
@@ -169,15 +169,15 @@ public class AuthController {
 
     @Operation(summary = "Login a user", description = "Login with email and password.")
     @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Login successful",
-                    content = @Content(
-                            mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = AuthResponse.class)
-                    )
+        @ApiResponse(
+                responseCode = "200",
+                description = "Login successful",
+                content = @Content(
+                        mediaType = MediaType.APPLICATION_JSON_VALUE,
+                        schema = @Schema(implementation = AuthResponse.class)
+                )
             ),
-            @ApiResponse(responseCode = "401", description = "Invalid credentials")
+        @ApiResponse(responseCode = "401", description = "Invalid credentials")
     })
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> userLoginMethod(
@@ -204,14 +204,14 @@ public class AuthController {
     @PostMapping("/google")
     @Operation(summary = "Authenticate via Google", description = "login/signup via Google OAuth.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                    description = "Authentication successful",
-                    content = @Content(
-                            mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = AuthResponse.class)
-                    )
+        @ApiResponse(responseCode = "200",
+                description = "Authentication successful",
+                content = @Content(
+                        mediaType = MediaType.APPLICATION_JSON_VALUE,
+                        schema = @Schema(implementation = AuthResponse.class)
+                )
             ),
-            @ApiResponse(responseCode = "500", description = "Google authentication failed")
+        @ApiResponse(responseCode = "500", description = "Google authentication failed")
     })
     public ResponseEntity<AuthResponse> authenticateWithGoogleMethod(
             @Schema(
