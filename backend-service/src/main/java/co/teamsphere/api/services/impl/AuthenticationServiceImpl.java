@@ -18,6 +18,7 @@ import org.springframework.validation.annotation.Validated;
 import co.teamsphere.api.config.JWTTokenProvider;
 import co.teamsphere.api.exception.ProfileImageException;
 import co.teamsphere.api.exception.UserException;
+import co.teamsphere.api.models.RefreshToken;
 import co.teamsphere.api.models.User;
 import co.teamsphere.api.repository.UserRepository;
 import co.teamsphere.api.request.SignupRequest;
@@ -25,7 +26,7 @@ import co.teamsphere.api.response.AuthResponse;
 import co.teamsphere.api.response.CloudflareApiResponse;
 import co.teamsphere.api.services.AuthenticationService;
 import co.teamsphere.api.services.CloudflareApiService;
-
+import co.teamsphere.api.services.RefreshTokenService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,19 +40,22 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final JWTTokenProvider jwtTokenProvider;
     private final CustomUserDetailsService customUserDetails;
     private final CloudflareApiService cloudflareApiService;
+    private final RefreshTokenService refreshTokenService;
 
     public AuthenticationServiceImpl(
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
             JWTTokenProvider jwtTokenProvider,
             CustomUserDetailsService customUserDetails,
-            CloudflareApiService cloudflareApiService
+            CloudflareApiService cloudflareApiService,
+            RefreshTokenService refreshTokenService
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
         this.customUserDetails = customUserDetails;
         this.cloudflareApiService = cloudflareApiService;
+        this.refreshTokenService = refreshTokenService;
     }
 
 
@@ -102,14 +106,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             // auto-login after signup
             Authentication authentication = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            String token = jwtTokenProvider.generateJwtToken(authentication);
 
-            return new AuthResponse(token, true);
+            String token = jwtTokenProvider.generateJwtToken(authentication);
+            var refreshToken = refreshTokenService.createRefreshToken(request.getEmail());
+            return new AuthResponse(token, refreshToken.getRefreshToken(), true);
         }
         catch (UserException e) {
             // TODO: think about returning a response and not throwing an error in a catch block
             log.error("Error during signup process", e);
-            throw e; // Rethrow specific exception to be handled by global exception handler
+            throw new UserException("Error Signing up"); // Rethrow specific exception to be handled by global exception handler
         }
         catch (ProfileImageException e){
             log.error("ERROR: {}", e.getMessage());
@@ -134,9 +139,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
+            log.info("User with email={} authenticated successfully", email);
             String token = jwtTokenProvider.generateJwtToken(authentication);
-
-            return new AuthResponse(token, true);
+            var refreshToken = refreshTokenService.createRefreshToken(email);
+            return new AuthResponse(token, refreshToken.getRefreshToken(), true);
         } catch (BadCredentialsException e) {
             log.warn("Authentication failed for user with username: {}", email);
             throw new UserException("Invalid username or password.");
