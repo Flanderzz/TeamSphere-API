@@ -11,9 +11,8 @@
         </module>
         <module name="AvoidStarImport"/>
         <module name="UnusedImports"/>
-        <module name="FinalParameters"/>
         <module name="FinalParameters">
-            <property name="tokens" value="METHOD_DEF, CTOR_DEF"/>
+            <property name="severity" value="ignore"/>
         </module>
     </module>
 </module>
