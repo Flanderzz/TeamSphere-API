@@ -1,20 +1,11 @@
 package co.teamsphere.api.controller;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.Optional;
-import java.util.UUID;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,8 +18,6 @@ import co.teamsphere.api.config.JWTTokenProvider;
 import co.teamsphere.api.exception.ProfileImageException;
 import co.teamsphere.api.exception.RefreshTokenException;
 import co.teamsphere.api.exception.UserException;
-import co.teamsphere.api.models.User;
-import co.teamsphere.api.repository.UserRepository;
 import co.teamsphere.api.request.LoginRequest;
 import co.teamsphere.api.request.RefreshTokenRequest;
 import co.teamsphere.api.request.SignupRequest;
@@ -36,7 +25,6 @@ import co.teamsphere.api.response.AuthResponse;
 import co.teamsphere.api.services.AuthenticationService;
 import co.teamsphere.api.services.RefreshTokenService;
 import co.teamsphere.api.utils.GoogleAuthRequest;
-import co.teamsphere.api.utils.GoogleUserInfo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -49,24 +37,16 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/auth")
 @Slf4j
 public class AuthController {
-    private final UserRepository userRepository;
-
-    private final PasswordEncoder passwordEncoder;
-
     private final JWTTokenProvider jwtTokenProvider;
 
     private final AuthenticationService authenticationService;
     
     private final RefreshTokenService refreshTokenService;
 
-    public AuthController(UserRepository userRepository,
-                          PasswordEncoder passwordEncoder,
-                          JWTTokenProvider jwtTokenProvider,
+    public AuthController(JWTTokenProvider jwtTokenProvider,
                           AuthenticationService authenticationService,
-                        RefreshTokenService refreshTokenService
+                          RefreshTokenService refreshTokenService
     ) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
         this.authenticationService = authenticationService;
         this.refreshTokenService = refreshTokenService;
