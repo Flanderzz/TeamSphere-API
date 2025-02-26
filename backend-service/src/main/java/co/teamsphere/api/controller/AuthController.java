@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
@@ -200,7 +201,7 @@ public class AuthController {
         }
     }
 
-    @Transactional // TODO: move business logic to service layer
+    // @Transactional // TODO: move business logic to service layer
     @PostMapping("/google")
     @Operation(summary = "Authenticate via Google", description = "login/signup via Google OAuth.")
     @ApiResponses(value = {
@@ -221,41 +222,11 @@ public class AuthController {
             @RequestPart("googleUser")
             @RequestBody GoogleAuthRequest request) {
         try {
-            log.info("Processing Google authentication request");
+            log.info("Processing Google authentication request for user with email: {}", request.getGoogleUserInfo().getEmail());
 
-            GoogleUserInfo googleUserInfo = request.getGoogleUserInfo();
+            var authResponse = authenticationService.loginWithGoogle(request);
 
-            String email = googleUserInfo.getEmail();
-            String username = googleUserInfo.getName();
-            String pictureUrl = googleUserInfo.getPicture();
-
-            // Check if user exists
-            Optional<User> optionalUser = userRepository.findByEmail(email);
-            if (optionalUser.isPresent()) {
-                log.info("Existing user found with userId: {}", optionalUser.get().getId());
-            } else {
-                // Register a new user if not exists
-                var currentDateTime = LocalDateTime.now().atOffset(ZoneOffset.UTC);
-                var user = User.builder()
-                        .email(email)
-                        .username(username)
-                        .password(passwordEncoder.encode(UUID.randomUUID().toString())) // consider adding this cause a userpass field should NEVER be null
-                        .profilePicture(pictureUrl)
-                        .createdDate(currentDateTime)
-                        .lastUpdatedDate(currentDateTime)
-                        .build();
-
-                userRepository.save(user);
-                log.info("New user created with email: {}", email);
-            }
-
-            // Load UserDetails and set authentication context
-            Authentication authentication = new UsernamePasswordAuthenticationToken(email, null);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-
-            String token = jwtTokenProvider.generateJwtToken(authentication);
-            var refreshToken = refreshTokenService.createRefreshToken(email);
-            AuthResponse authResponse = new AuthResponse(token, refreshToken.getRefreshToken(), true);
+            log.info("Google authentication successful for user with email: {}", request.getGoogleUserInfo().getEmail());
 
             return new ResponseEntity<>(authResponse, HttpStatus.OK);
         } catch (Exception e) {

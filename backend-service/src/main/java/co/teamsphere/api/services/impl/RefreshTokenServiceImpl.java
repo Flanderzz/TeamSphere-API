@@ -67,5 +67,9 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
             refreshTokenRepository.delete(user.get());
         }
     }
-    
+
+    @Override
+    public Optional<RefreshToken> findByUserId(String userId) {
+        return refreshTokenRepository.findByUserId(UUID.fromString(userId));
+    }
 }

@@ -1,13 +1,17 @@
 package co.teamsphere.api.services.impl;
 
 import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,6 +30,8 @@ import co.teamsphere.api.response.CloudflareApiResponse;
 import co.teamsphere.api.services.AuthenticationService;
 import co.teamsphere.api.services.CloudflareApiService;
 import co.teamsphere.api.services.RefreshTokenService;
+import co.teamsphere.api.utils.GoogleAuthRequest;
+import co.teamsphere.api.utils.GoogleUserInfo;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
@@ -103,23 +109,32 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             userRepository.save(newUser);
 
             // auto-login after signup
-            Authentication authentication = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            SecurityContext context = SecurityContextHolder.getContext();
+            Authentication authentication = authentication(request.getEmail(), request.getPassword());
+            context.setAuthentication(authentication);
+            SecurityContextHolder.setContext(context);
+
+            if (!authentication.isAuthenticated()) {
+                log.warn("Authentication failed for user with username: {}", request.getEmail());
+                throw new BadCredentialsException("Invalid username or password.");
+            }
 
             String token = jwtTokenProvider.generateJwtToken(authentication);
-            var refreshToken = refreshTokenService.createRefreshToken(request.getEmail());
+
+            log.info("Generating refresh token for user with ID: {}", newUser.getId());
+            var refreshToken = refreshTokenService.createRefreshToken(newUser.getEmail());
             return new AuthResponse(token, refreshToken.getRefreshToken(), true);
         }
         catch (UserException e) {
-            // TODO: think about returning a response and not throwing an error in a catch block
             log.error("Error during signup process", e);
-            throw new UserException("Error Signing up"); // Rethrow specific exception to be handled by global exception handler
-        }
-        catch (ProfileImageException e){
+            throw new UserException("Error Signing up");
+        } catch (BadCredentialsException e) {
+            log.error("Authentication failed for user with username: {}", request.getEmail());
+            throw new BadCredentialsException("Invalid username or password.", e);
+        } catch (ProfileImageException e){
             log.error("ERROR: {}", e.getMessage());
             throw new ProfileImageException(e.getMessage());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error("Unexpected error during signup process", e);
             throw new UserException("Unexpected error during signup process");
         }
@@ -134,13 +149,30 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 throw new UserException("Email is already used with another account");
             }
 
-            Authentication authentication = authentication(email, password);
+            Optional<User> optionalUser = userRepository.findByEmail(email);
+            if (!optionalUser.isPresent()) {
+                log.warn("User with email={} not found", email);
+                throw new BadCredentialsException("Invalid username or password.");
+            }
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            SecurityContext context = SecurityContextHolder.getContext();
+            Authentication authentication = authentication(email, password);
+            context.setAuthentication(authentication);
+            SecurityContextHolder.setContext(context);
+
+            if (!authentication.isAuthenticated()) {
+                log.warn("Authentication failed for user with username: {}", email);
+                throw new BadCredentialsException("Invalid username or password.");
+            }
 
             log.info("User with email={} authenticated successfully", email);
             String token = jwtTokenProvider.generateJwtToken(authentication);
-            var refreshToken = refreshTokenService.createRefreshToken(email);
+
+            log.info("Generating refresh! token for user with ID: {}", optionalUser.get().getId());
+            var refreshToken = refreshTokenService.findByUserId(optionalUser.get().getId().toString()).get();
+            if (refreshToken == null || refreshToken.getExpiredAt().compareTo(Instant.now()) < 0) {
+                refreshToken = refreshTokenService.createRefreshToken(email);
+            }
             return new AuthResponse(token, refreshToken.getRefreshToken(), true);
         } catch (BadCredentialsException e) {
             log.warn("Authentication failed for user with username: {}", email);
@@ -148,6 +180,62 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         } catch (Exception e) {
             log.error("Unexpected error during login process", e);
             throw new UserException("Unexpected error during login process.");
+        }
+    }
+
+    @Override
+    public AuthResponse loginWithGoogle(GoogleAuthRequest request) throws UserException {
+        try {
+            GoogleUserInfo googleUserInfo = request.getGoogleUserInfo();
+
+            String email = googleUserInfo.getEmail();
+            String username = googleUserInfo.getName();
+            String pictureUrl = googleUserInfo.getPicture();
+
+            // Check if user exists
+            User googleUser = null;
+            Optional<User> optionalUser = userRepository.findByEmail(email);
+            if (optionalUser.isPresent()) {
+                log.info("Existing user found with userId: {}", optionalUser.get().getId());
+                googleUser = optionalUser.get();
+            } else {
+                // Register a new user if not exists
+                var currentDateTime = LocalDateTime.now().atOffset(ZoneOffset.UTC);
+                var user = User.builder()
+                        .email(email)
+                        .username(username)
+                        .password(passwordEncoder.encode(UUID.randomUUID().toString())) // consider adding this cause the password field should NEVER be null
+                        .profilePicture(pictureUrl)
+                        .createdDate(currentDateTime)
+                        .lastUpdatedDate(currentDateTime)
+                        .build();
+
+                googleUser = userRepository.saveAndFlush(user);
+                log.info("New user created with email: {}", email);
+            }
+
+            // Load UserDetails and set authentication context
+            SecurityContext context = SecurityContextHolder.getContext();
+            Authentication authentication = new UsernamePasswordAuthenticationToken(email, null);
+            context.setAuthentication(authentication);
+            SecurityContextHolder.setContext(context);
+
+            log.info("User with email={} authenticated successfully", googleUser.getEmail());
+            String token = jwtTokenProvider.generateJwtTokenFromEmail(email);
+
+            log.info("Generating refresh token for user with ID: {}", googleUser.getId());
+            var refreshToken = refreshTokenService.findByUserId(googleUser.getId().toString()).get();
+            if (refreshToken == null || refreshToken.getExpiredAt().compareTo(Instant.now()) < 0) {
+                log.info("Creating new refresh token for user with email: {}", googleUser.getEmail());
+                refreshToken = refreshTokenService.createRefreshToken(googleUser.getEmail());
+            }
+            return new AuthResponse(token, refreshToken.getRefreshToken(), true);
+        } catch (BadCredentialsException e) {
+            log.error("Error during Google authentication: ", e);
+            throw new BadCredentialsException("Error during Google authentication");
+        } catch (Exception e) {
+            log.error("Error during Google authentication: ", e);
+            throw new UserException("Error during Google authentication");
         }
     }
 
@@ -160,7 +248,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return !Pattern.compile(emailRegex).matcher(email).matches();
     }
 
-    private Authentication authentication(String email, String password) {
+    private Authentication authentication(String email, String password) throws BadCredentialsException {
         log.info("Authenticating user with email: {}", email);
 
         UserDetails userDetails = customUserDetails.loadUserByUsername(email);
