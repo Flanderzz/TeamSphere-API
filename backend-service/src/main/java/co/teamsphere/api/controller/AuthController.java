@@ -181,7 +181,6 @@ public class AuthController {
         }
     }
 
-    // @Transactional // TODO: move business logic to service layer
     @PostMapping("/google")
     @Operation(summary = "Authenticate via Google", description = "login/signup via Google OAuth.")
     @ApiResponses(value = {

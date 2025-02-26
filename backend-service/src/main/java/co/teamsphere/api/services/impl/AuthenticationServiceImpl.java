@@ -166,14 +166,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 throw new BadCredentialsException("Invalid username or password.");
             }
 
-            log.info("User with email={} authenticated successfully", email);
             String token = jwtTokenProvider.generateJwtToken(authentication);
 
             log.info("Generating refresh token for user with ID: {}", optionalUser.get().getId());
-            RefreshToken refreshToken = refreshTokenService.findByUserId(optionalUser.get().getId().toString());
-            if (refreshToken == null || refreshToken.getExpiredAt().compareTo(Instant.now()) < 0) {
-                refreshToken = refreshTokenService.createRefreshToken(email);
-            }
+            RefreshToken refreshToken = createRefreshToken(optionalUser.get().getId().toString(), email);
             return new AuthResponse(token, refreshToken.getRefreshToken(), true);
         } catch (BadCredentialsException e) {
             log.warn("Authentication failed for user with username: {}", email);
@@ -185,6 +181,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
+    @Transactional
     public AuthResponse loginWithGoogle(GoogleAuthRequest request) throws UserException {
         try {
             GoogleUserInfo googleUserInfo = request.getGoogleUserInfo();
@@ -222,11 +219,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             SecurityContextHolder.setContext(context);
 
             String token = jwtTokenProvider.generateJwtTokenFromEmail(email);
-            RefreshToken refreshToken = refreshTokenService.findByUserId(googleUser.getId().toString());
-            if (refreshToken == null || refreshToken.getExpiredAt().compareTo(Instant.now()) < 0) {
-                log.info("Creating new refresh token for user with email: {}", googleUser.getEmail());
-                refreshToken = refreshTokenService.createRefreshToken(googleUser.getEmail());
-            }
+            RefreshToken refreshToken = createRefreshToken(googleUser.getId().toString(), email);
             return new AuthResponse(token, refreshToken.getRefreshToken(), true);
         } catch (BadCredentialsException e) {
             log.error("Error during Google authentication: ", e);
@@ -264,5 +257,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         log.info("Authentication successful for user with email: {}", email);
 
         return new UsernamePasswordAuthenticationToken(userDetails, password, userDetails.getAuthorities());
+    }
+
+    private RefreshToken createRefreshToken(String userID, String email) throws UserException {
+        RefreshToken refreshToken = refreshTokenService.findByUserId(userID);
+        if (refreshToken == null || refreshToken.getExpiredAt().compareTo(Instant.now()) < 0) {
+            refreshToken = refreshTokenService.createRefreshToken(email);
+        }
+
+        return refreshToken;
     }
 }
