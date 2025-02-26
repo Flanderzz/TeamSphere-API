@@ -4,6 +4,7 @@ echo "Running Checkstyle..."
 mvn checkstyle:check
 CHECKSTYLE_STATUS=$?
 
+
 if [ $CHECKSTYLE_STATUS -ne 0 ]; then
     echo "❌ Checkstyle failed! Fix your errors before committing buddy!"
     exit 1 
