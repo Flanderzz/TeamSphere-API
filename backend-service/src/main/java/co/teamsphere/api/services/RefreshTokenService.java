@@ -14,9 +14,9 @@ public interface RefreshTokenService {
 
     Optional<RefreshToken> findRefreshToken(String refreshToken);
 
-    Optional<RefreshToken> findByUserId(String userId);
-    
     RefreshToken verifyExpiration(RefreshToken token) throws RefreshTokenException;
-
+    
     void deleteRefreshTokenByUserId(String userId);
+
+    RefreshToken findByUserId(String userId);
 }

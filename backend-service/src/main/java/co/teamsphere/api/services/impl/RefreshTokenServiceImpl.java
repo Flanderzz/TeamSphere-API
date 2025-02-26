@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import co.teamsphere.api.models.User;
 import co.teamsphere.api.exception.RefreshTokenException;
 import co.teamsphere.api.exception.UserException;
 import co.teamsphere.api.models.RefreshToken;
@@ -29,7 +30,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     @Override
     @Transactional
     public RefreshToken createRefreshToken(String email) throws UserException {
-        var user = userRepository.findByEmail(email);
+        Optional<User> user = userRepository.findByEmail(email);
         if (user.isEmpty()) {
             log.error("User not found with ID: {}", email);
             throw new UserException("User not found with ID: " + email);
@@ -61,7 +62,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 
     @Override
     public void deleteRefreshTokenByUserId(String userId) {
-        var user = refreshTokenRepository.findByUserId(UUID.fromString(userId));
+        Optional<RefreshToken> user = refreshTokenRepository.findByUserId(UUID.fromString(userId));
 
         if(user.isPresent()){
             refreshTokenRepository.delete(user.get());
@@ -69,7 +70,13 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     }
 
     @Override
-    public Optional<RefreshToken> findByUserId(String userId) {
-        return refreshTokenRepository.findByUserId(UUID.fromString(userId));
+    public RefreshToken findByUserId(String userId) {
+        Optional<RefreshToken> potentialToken = refreshTokenRepository.findByUserId(UUID.fromString(userId));
+
+        if(potentialToken.isEmpty()){
+            return null;
+        }
+
+        return potentialToken.get();
     }
 }

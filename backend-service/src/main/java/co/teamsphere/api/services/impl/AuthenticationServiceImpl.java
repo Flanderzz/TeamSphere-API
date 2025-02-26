@@ -22,6 +22,7 @@ import org.springframework.validation.annotation.Validated;
 import co.teamsphere.api.config.JWTTokenProvider;
 import co.teamsphere.api.exception.ProfileImageException;
 import co.teamsphere.api.exception.UserException;
+import co.teamsphere.api.models.RefreshToken;
 import co.teamsphere.api.models.User;
 import co.teamsphere.api.repository.UserRepository;
 import co.teamsphere.api.request.SignupRequest;
@@ -168,8 +169,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             log.info("User with email={} authenticated successfully", email);
             String token = jwtTokenProvider.generateJwtToken(authentication);
 
-            log.info("Generating refresh! token for user with ID: {}", optionalUser.get().getId());
-            var refreshToken = refreshTokenService.findByUserId(optionalUser.get().getId().toString()).get();
+            log.info("Generating refresh token for user with ID: {}", optionalUser.get().getId());
+            RefreshToken refreshToken = refreshTokenService.findByUserId(optionalUser.get().getId().toString());
             if (refreshToken == null || refreshToken.getExpiredAt().compareTo(Instant.now()) < 0) {
                 refreshToken = refreshTokenService.createRefreshToken(email);
             }
@@ -220,11 +221,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             context.setAuthentication(authentication);
             SecurityContextHolder.setContext(context);
 
-            log.info("User with email={} authenticated successfully", googleUser.getEmail());
             String token = jwtTokenProvider.generateJwtTokenFromEmail(email);
-
-            log.info("Generating refresh token for user with ID: {}", googleUser.getId());
-            var refreshToken = refreshTokenService.findByUserId(googleUser.getId().toString()).get();
+            RefreshToken refreshToken = refreshTokenService.findByUserId(googleUser.getId().toString());
             if (refreshToken == null || refreshToken.getExpiredAt().compareTo(Instant.now()) < 0) {
                 log.info("Creating new refresh token for user with email: {}", googleUser.getEmail());
                 refreshToken = refreshTokenService.createRefreshToken(googleUser.getEmail());
