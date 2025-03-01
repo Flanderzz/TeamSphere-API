@@ -75,7 +75,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 throw new UserException("Username is already used with another account");
             }
 
-            if (request.getFile().isEmpty() || (!request.getFile().getContentType().equals("image/jpeg") && !request.getFile().getContentType().equals("image/png"))) {
+            if (request.getFile().isEmpty()
+                    || (!request.getFile().getContentType().equals("image/jpeg")
+                    && !request.getFile().getContentType().equals("image/png"))) {
                 log.warn("File type not accepted, {}", request.getFile().getContentType());
                 throw new ProfileImageException("Profile Picture type is not allowed!");
             }
