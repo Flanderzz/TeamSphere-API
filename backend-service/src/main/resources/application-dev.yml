@@ -54,9 +54,3 @@ management:
 info:
   app:
     version: ${APP_VERSION}
-    group: '@project.groupId@'
-    name: '@project.name@'
-    time: '@maven.build.timestamp@'
-    artifact: '@project.artifactId@'
-  build:
-    version: ${APP_VERSION}
