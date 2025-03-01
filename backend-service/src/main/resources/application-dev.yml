@@ -49,3 +49,6 @@ management:
   info:
     build:
       enabled: true
+info:
+  app:
+    version: ${APP_VERSION:local-SNAPSHOT}
