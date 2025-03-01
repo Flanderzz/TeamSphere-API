@@ -40,3 +40,12 @@ app:
   environment:
     ALLOWED_ORIGINS:
       - ${ALLOWED_ORIGIN}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics
+  info:
+    build:
+      enabled: true
