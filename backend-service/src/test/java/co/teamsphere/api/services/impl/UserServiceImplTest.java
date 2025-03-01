@@ -233,13 +233,20 @@ public class UserServiceImplTest {
         verify(userRepository, never()).save(any(User.class));
     }
 
+    private MultipartFile mockMultipartFile() {
+        MultipartFile file = mock(MultipartFile.class);
+
+        when(file.getContentType()).thenReturn("image/png");
+
+        return file;
+    }
+
     @Test
     void updateUserThrowsExceptionWhenProfileUploadFails() throws IOException {
         // Setup user repository mock
         when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
 
         // Create mock file with actual content
-        byte[] fileContent = "test image content".getBytes();
         MultipartFile mockFile = mockMultipartFile();
 
         // Setup request
@@ -266,15 +273,4 @@ public class UserServiceImplTest {
         verify(cloudflareApiService).uploadImage(any(MultipartFile.class));
         verify(userRepository).findById(testUser.getId());
     }
-
-
-    private MultipartFile mockMultipartFile() {
-        MultipartFile file = mock(MultipartFile.class);
-
-        when(file.getContentType()).thenReturn("image/png");
-
-        return file;
-    }
-
-
 }
