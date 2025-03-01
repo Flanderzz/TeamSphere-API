@@ -58,3 +58,5 @@ info:
     name: '@project.name@'
     time: '@maven.build.timestamp@'
     artifact: '@project.artifactId@'
+  build:
+    version: ${APP_VERSION}
