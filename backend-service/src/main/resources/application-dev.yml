@@ -53,7 +53,7 @@ management:
       enabled: true
 info:
   app:
-    version: ${APP_VERSION:local-SNAPSHOT}
+    version: ${APP_VERSION}
     group: '@project.groupId@'
     name: '@project.name@'
     time: '@maven.build.timestamp@'
