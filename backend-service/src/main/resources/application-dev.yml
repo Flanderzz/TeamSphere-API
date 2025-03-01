@@ -47,8 +47,14 @@ management:
       exposure:
         include: health, info, metrics
   info:
+    env:
+      enabled: true
     build:
       enabled: true
 info:
   app:
     version: ${APP_VERSION:local-SNAPSHOT}
+    group: '@project.groupId@'
+    name: '@project.name@'
+    time: '@maven.build.timestamp@'
+    artifact: '@project.artifactId@'
